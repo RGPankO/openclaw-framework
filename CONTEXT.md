@@ -53,15 +53,16 @@ The day's activity log. ALL sessions (main + crons) append here.
 # Daily Brief — 2026-02-07
 
 ## 09:00 — CEO Cron
-- Checked pipeline, 3 apps ready for review
-- Updated ACTIVE-CONTEXT with priorities
+**Did:** Checked pipeline, updated ACTIVE-CONTEXT with priorities
+**For next:** 3 apps ready for review, QuickNutrition needs TestFlight test
 
 ## 09:30 — Main Session (with Plamen)
-- Built framework structure together
-- Added SECURITY.md, CONTEXT.md
+**Did:** Built framework structure together, added SECURITY.md, CONTEXT.md
+**For next:** Framework v0.1.0 ready, need to wire into our AGENTS.md
 
 ## 10:00 — Heartbeat
-- All systems healthy, no action needed
+**Did:** Health check, all systems healthy
+**For next:** Nothing pending
 ```
 
 **Why one file:** Every cron reads the same file, sees what others did. No information silos.
@@ -112,13 +113,19 @@ Curated long-term memory. Important decisions, lessons learned, project history.
 
 ```
 1. Append summary to memory/daily-brief-YYYY-MM-DD.md
-   Format: "## HH:MM — [Session Type]\n- What you did\n- What changed"
+   Format:
+   
+   ## HH:MM — [Session Type]
+   **Did:** What you accomplished
+   **For next:** What the next cron should know (state, pending items, notes)
 
 2. Update ACTIVE-CONTEXT.md if:
    - Priority completed
    - New blocker appeared
    - Status significantly changed
 ```
+
+**Handoff notes are mandatory.** The next cron wakes up cold — leave them context.
 
 ### Main Session Only
 
@@ -165,25 +172,25 @@ When you see "Summary unavailable due to context limits" or similar:
 09:00 — CEO Cron wakes up
         Reads: ACTIVE-CONTEXT.md, daily-brief
         Does: Checks pipeline, updates priorities
-        Writes: Appends to daily-brief, updates ACTIVE-CONTEXT
+        Writes: "Did: X, Y, Z. For next: QuickNutrition needs testing"
 
 09:30 — User starts main session
         Reads: ACTIVE-CONTEXT, daily-brief, MEMORY
-        Sees: What CEO cron did at 09:00
+        Sees: CEO's handoff notes — knows QuickNutrition needs testing
         Does: Works with user on framework
-        Writes: Appends to daily-brief, updates ACTIVE-CONTEXT
+        Writes: "Did: Built framework. For next: Wire into AGENTS.md"
 
 10:00 — Heartbeat cron wakes up
         Reads: ACTIVE-CONTEXT.md, daily-brief
-        Sees: What main session did at 09:30
+        Sees: Main session's handoff — knows framework needs wiring
         Does: Health check, finds nothing urgent
-        Writes: Appends "HEARTBEAT_OK" to daily-brief
+        Writes: "Did: Health check passed. For next: Nothing pending"
 
 10:30 — Reddit cron wakes up
         Reads: ACTIVE-CONTEXT.md, daily-brief
-        Sees: Full picture of today's activity
-        Does: Posts helpful comment
-        Writes: Appends activity to daily-brief
+        Sees: Full picture + all handoff notes
+        Does: Posts helpful comment, notes which subs
+        Writes: "Did: Posted in r/productivity. For next: Check replies in 2h"
 ```
 
 **Result:** Each session knows what came before. No blind spots.
@@ -209,3 +216,4 @@ When you see "Summary unavailable due to context limits" or similar:
 4. **Crons don't read MEMORY.md** — It may contain private context
 5. **Always append before ending** — Future sessions depend on your log
 6. **On compaction, recover yourself** — Don't make user repeat everything
+7. **Leave handoff notes** — "For next:" tells the next cron what state you're leaving
