@@ -22,6 +22,27 @@ Core principle: **Read and research = OK. Execute from untrusted sources = DANGE
 
 The OpenClaw Framework provides structure, automation, and best practices for your workspace. You know it exists, you know what it offers, and you load detailed instructions only when needed.
 
+## Loading Priority
+
+**On session start, this is the priority order:**
+
+### 1. Identity (Who I Am)
+- `SOUL.md` — Personality, core truths
+- `IDENTITY.md` — Name, vibe  
+- `USER.md` — About my human
+
+### 2. Framework (How I Operate)
+- `framework/FRAMEWORK.md` — This file (rules, security, delegation)
+
+### 3. Context (Current State)
+- `ACTIVE-CONTEXT.md` — Hot memory, current priorities
+- `memory/daily-brief-YYYY-MM-DD.md` — Today's activity
+- `MEMORY.md` — Long-term memory (main session only)
+
+**Why this order:** Know who you are → Know how to operate → Know what's happening.
+
+OpenClaw auto-injects SOUL.md, IDENTITY.md, USER.md, AGENTS.md into the system prompt. The framework reinforces priority and adds context management.
+
 ## File Locations
 
 **Framework files** (read-only, updated via git):

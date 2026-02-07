@@ -272,24 +272,36 @@ Create `memory/daily-brief-YYYY-MM-DD.md`:
 
 ### Step 13: Update AGENTS.md
 
-Add framework wiring to user's AGENTS.md:
+Add framework wiring to user's AGENTS.md. **Use this priority order:**
 
 ```markdown
-## Framework
+## Session Startup
 
-This agent uses the OpenClaw Framework.
+### 1. Identity (Who I Am)
+OpenClaw auto-loads these, but reinforce the priority:
+- `SOUL.md` — Personality, core truths
+- `IDENTITY.md` — Name, vibe
+- `USER.md` — About my human
 
-**On session start, read:**
-1. `ACTIVE-CONTEXT.md` — Current priorities
-2. `memory/daily-brief-YYYY-MM-DD.md` — Today's activity
-3. `framework/FRAMEWORK.md` — Framework rules
+### 2. Framework (How I Operate)
+- `framework/FRAMEWORK.md` — Rules, security, delegation
 
-**After completing work:**
-1. Append to daily brief
-2. Update ACTIVE-CONTEXT if needed
+### 3. Context (Current State)
+- `ACTIVE-CONTEXT.md` — Hot memory, current priorities
+- `memory/daily-brief-YYYY-MM-DD.md` — Today's activity
+- `MEMORY.md` — Long-term memory (main session only)
+
+## After Completing Work
+1. Append summary to daily brief
+2. Update ACTIVE-CONTEXT if priorities changed
 
 **For details:** See `framework/` directory
 ```
+
+**Why this order:**
+1. **Identity first** — Know who you are before anything else
+2. **Framework second** — Know how to operate
+3. **Context third** — Know what's happening now
 
 ### Step 14: Confirm Installation
 
