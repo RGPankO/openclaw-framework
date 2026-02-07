@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Activity Log - OpenClaw Framework</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .back { color: #58a6ff; text-decoration: none; font-size: 1.5rem; }
+    h1 { font-size: 1.5rem; color: #58a6ff; }
+    .date-controls {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    .date-nav {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .date-btn {
+      padding: 0.5rem 1rem;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .date-btn:hover { border-color: #58a6ff; }
+    .date-btn.active { background: #238636; border-color: #238636; }
+    .date-select {
+      padding: 0.5rem;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      font-size: 0.85rem;
+    }
+    .date-count { color: #8b949e; font-size: 0.85rem; }
+    .log-content {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 1.5rem;
+      white-space: pre-wrap;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    .log-content h1, .log-content h2 { color: #58a6ff; }
+    .log-content h2 { margin-top: 1.5rem; }
+    .empty { text-align: center; color: #8b949e; padding: 3rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back">←</a>
+      <h1>📋 Activity Log</h1>
+    </div>
+    
+    <div class="date-controls">
+      <div class="date-nav">
+        <button class="date-btn" onclick="navDate(-1)">← Prev</button>
+        <button class="date-btn" onclick="navDate(1)">Next →</button>
+      </div>
+      <select class="date-select" id="dateSelect" onchange="selectDate(this.value)">
+        <option>Loading...</option>
+      </select>
+      <span class="date-count" id="dateCount"></span>
+    </div>
+    
+    <div class="log-content" id="logContent">
+      <div class="empty">Loading activity...</div>
+    </div>
+  </div>
+
+  <script>
+    let activities = [];
+    let currentIndex = 0;
+    
+    async function loadActivities() {
+      try {
+        const res = await fetch('/api/activity');
+        activities = await res.json();
+        
+        const select = document.getElementById('dateSelect');
+        const count = document.getElementById('dateCount');
+        
+        if (activities.length === 0) {
+          select.innerHTML = '<option>No logs</option>';
+          document.getElementById('logContent').innerHTML = '<div class="empty">No activity logs yet. They\'ll appear here when crons and sessions log their work.</div>';
+          return;
+        }
+        
+        select.innerHTML = activities.map((a, i) => 
+          `<option value="${i}">${a.date}</option>`
+        ).join('');
+        
+        count.textContent = `${activities.length} day${activities.length > 1 ? 's' : ''} of logs`;
+        
+        showDate(0);
+      } catch (e) {
+        document.getElementById('logContent').innerHTML = '<div class="empty">Error loading activity</div>';
+      }
+    }
+    
+    function showDate(index) {
+      if (index < 0 || index >= activities.length) return;
+      currentIndex = index;
+      
+      document.getElementById('dateSelect').value = index;
+      
+      const activity = activities[index];
+      const content = document.getElementById('logContent');
+      
+      if (activity && activity.content) {
+        let html = activity.content
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+          .replace(/^# (.+)$/gm, '<h1>$1</h1>');
+        content.innerHTML = html;
+      } else {
+        content.innerHTML = '<div class="empty">No content for this date</div>';
+      }
+    }
+    
+    function selectDate(index) {
+      showDate(parseInt(index));
+    }
+    
+    function navDate(delta) {
+      showDate(currentIndex + delta);
+    }
+    
+    loadActivities();
+  </script>
+</body>
+</html>

@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasks - OpenClaw Framework</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container { max-width: 900px; margin: 0 auto; }
+    .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.5rem; }
+    .back { color: #58a6ff; text-decoration: none; font-size: 1.5rem; }
+    h1 { font-size: 1.5rem; color: #58a6ff; }
+    .tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; }
+    .tab {
+      padding: 0.5rem 1rem;
+      background: #21262d;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      cursor: pointer;
+    }
+    .tab:hover { border-color: #58a6ff; }
+    .tab.active { background: #238636; border-color: #238636; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .item {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .item-header {
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .item-header:hover { background: #21262d; }
+    .item-info h3 { margin-bottom: 0.25rem; }
+    .item-info p { color: #8b949e; font-size: 0.85rem; }
+    .item-actions { display: flex; gap: 0.5rem; }
+    .btn {
+      padding: 0.4rem 0.8rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-primary { background: #238636; color: white; }
+    .btn-secondary { background: #30363d; color: #c9d1d9; }
+    .btn-danger { background: #da3633; color: white; }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      margin-left: 0.5rem;
+    }
+    .badge-enabled { background: rgba(46, 160, 67, 0.2); color: #3fb950; }
+    .badge-disabled { background: rgba(248, 81, 73, 0.2); color: #f85149; }
+    .item-content {
+      display: none;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #30363d;
+      background: #0d1117;
+    }
+    .item-content.open { display: block; }
+    .item-content textarea {
+      width: 100%;
+      min-height: 300px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      padding: 1rem;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+    }
+    .item-content textarea:focus { outline: none; border-color: #58a6ff; }
+    .save-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+    .empty { text-align: center; color: #8b949e; padding: 3rem; }
+    .status-msg {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 1rem;
+      background: #238636;
+      border-radius: 6px;
+      display: none;
+    }
+    .status-msg.show { display: block; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back">←</a>
+      <h1>⚡ Tasks</h1>
+    </div>
+    
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('instructions')">Task Instructions (.md)</button>
+      <button class="tab" onclick="showTab('crons')">Task Executions</button>
+    </div>
+    
+    <div id="instructions" class="section active">
+      <div id="taskList"><div class="empty">Loading task instructions...</div></div>
+    </div>
+    
+    <div id="crons" class="section">
+      <div id="cronList"><div class="empty">Loading crons...</div></div>
+    </div>
+    
+    <div class="status-msg" id="statusMsg">Saved!</div>
+  </div>
+
+  <script>
+    function showTab(tab) {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+      document.querySelector(`[onclick="showTab('${tab}')"]`).classList.add('active');
+      document.getElementById(tab).classList.add('active');
+    }
+    
+    function showStatus(msg) {
+      const el = document.getElementById('statusMsg');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2000);
+    }
+    
+    // ===== CRONS =====
+    async function loadCrons() {
+      try {
+        const res = await fetch('/api/crons');
+        const data = await res.json();
+        const list = document.getElementById('cronList');
+        
+        if (!data.jobs || data.jobs.length === 0) {
+          list.innerHTML = '<div class="empty">No cron jobs configured</div>';
+          return;
+        }
+        
+        // Sort: enabled first, disabled below
+        const sorted = [...data.jobs].sort((a, b) => {
+          if (a.enabled === b.enabled) return 0;
+          return a.enabled ? -1 : 1;
+        });
+        
+        list.innerHTML = sorted.map(job => `
+          <div class="item">
+            <div class="item-header">
+              <div class="item-info">
+                <h3>${job.name || 'Unnamed'} 
+                  <span class="badge ${job.enabled ? 'badge-enabled' : 'badge-disabled'}">
+                    ${job.enabled ? 'Enabled' : 'Disabled'}
+                  </span>
+                </h3>
+                <p>${formatSchedule(job.schedule)} | Next: ${formatTime(job.state?.nextRunAtMs)}</p>
+              </div>
+              <div class="item-actions">
+                <button class="btn btn-primary" onclick="runCron('${job.id}')">▶ Run Now</button>
+                <button class="btn btn-secondary" onclick="toggleCron('${job.id}', ${!job.enabled})">
+                  ${job.enabled ? '⏸ Disable' : '▶ Enable'}
+                </button>
+              </div>
+            </div>
+          </div>
+        `).join('');
+      } catch (e) {
+        document.getElementById('cronList').innerHTML = `<div class="empty">Error: ${e.message}</div>`;
+      }
+    }
+    
+    function formatSchedule(s) {
+      if (!s) return 'Unknown';
+      if (s.kind === 'every') return `Every ${Math.round(s.everyMs / 60000)} min`;
+      if (s.kind === 'cron') return `Cron: ${s.expr}`;
+      return JSON.stringify(s);
+    }
+    
+    function formatTime(ms) {
+      if (!ms) return 'Unknown';
+      return new Date(ms).toLocaleString();
+    }
+    
+    async function runCron(id) {
+      try {
+        await fetch(`/api/crons/${id}/run`, { method: 'POST' });
+        showStatus('Cron triggered!');
+        loadCrons();
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    }
+    
+    async function toggleCron(id, enabled) {
+      try {
+        await fetch(`/api/crons/${id}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled })
+        });
+        showStatus(enabled ? 'Enabled!' : 'Disabled!');
+        loadCrons();
+      } catch (e) {
+        alert('Error: ' + e.message);
+      }
+    }
+    
+    // ===== TASK INSTRUCTIONS =====
+    let tasks = [];
+    
+    async function loadTasks() {
+      try {
+        const res = await fetch('/api/tasks');
+        tasks = await res.json();
+        renderTasks();
+      } catch (e) {
+        document.getElementById('taskList').innerHTML = '<div class="empty">Error loading tasks</div>';
+      }
+    }
+    
+    function renderTasks() {
+      const list = document.getElementById('taskList');
+      if (tasks.length === 0) {
+        list.innerHTML = '<div class="empty">No task instruction files in workspace/TASKS/</div>';
+        return;
+      }
+      
+      list.innerHTML = tasks.map((t, i) => `
+        <div class="item" id="task-${i}">
+          <div class="item-header" onclick="toggleTask(${i})">
+            <div class="item-info">
+              <h3>${t.title}</h3>
+              <p>File: ${t.filename} | Schedule: ${t.schedule}</p>
+            </div>
+            <div class="item-actions" onclick="event.stopPropagation()">
+              <button class="btn btn-secondary" onclick="toggleTask(${i})">Edit</button>
+            </div>
+          </div>
+          <div class="item-content" id="content-${i}">
+            <textarea id="editor-${i}">${escapeHtml(t.content || '')}</textarea>
+            <div class="save-row">
+              <button class="btn btn-primary" onclick="saveTask(${i})">Save Changes</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function toggleTask(i) {
+      const content = document.getElementById(`content-${i}`);
+      content.classList.toggle('open');
+    }
+    
+    async function saveTask(i) {
+      const content = document.getElementById(`editor-${i}`).value;
+      const task = tasks[i];
+      
+      await fetch(`/api/tasks/${task.id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      
+      tasks[i].content = content;
+      showStatus('Saved!');
+    }
+    
+    loadCrons();
+    loadTasks();
+  </script>
+</body>
+</html>

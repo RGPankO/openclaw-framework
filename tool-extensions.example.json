@@ -1,0 +1,12 @@
+{
+  "tools": [
+    {
+      "id": "example-tool",
+      "name": "Example Tool",
+      "emoji": "🔧",
+      "description": "An example custom tool",
+      "path": "/example/",
+      "staticDir": "my-tools/example/"
+    }
+  ]
+}

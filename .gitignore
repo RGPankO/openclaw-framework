@@ -1,0 +1,8 @@
+# Dependencies
+tools/node_modules/
+
+# Instance-specific cache (refreshed by agent)
+tools/cron-cache.json
+
+# Logs
+*.log

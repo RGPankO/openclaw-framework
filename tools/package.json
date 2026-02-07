@@ -1,0 +1,12 @@
+{
+  "name": "openclaw-framework-tools",
+  "version": "0.1.2",
+  "description": "Web tools for OpenClaw Framework",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}

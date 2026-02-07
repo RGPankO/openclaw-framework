@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Settings - OpenClaw Framework</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .back { color: #58a6ff; text-decoration: none; font-size: 1.5rem; }
+    h1 { font-size: 1.5rem; color: #58a6ff; }
+    h2 { font-size: 1.1rem; color: #c9d1d9; margin-bottom: 1rem; }
+    .section {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+    }
+    .section-header {
+      background: #21262d;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .section-header span { color: #8b949e; font-size: 0.85rem; }
+    textarea {
+      width: 100%;
+      min-height: 200px;
+      padding: 1rem;
+      background: #161b22;
+      border: none;
+      color: #c9d1d9;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      resize: vertical;
+    }
+    textarea:focus { outline: none; }
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-primary { background: #238636; color: white; }
+    .status {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+    .status.success { display: block; background: #238636; }
+    .status.error { display: block; background: #da3633; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back">←</a>
+      <h1>⚙️ Settings</h1>
+    </div>
+    
+    <div class="section">
+      <div class="section-header">
+        <span>USER-SETTINGS.md</span>
+        <button class="btn btn-primary" onclick="saveSettings()">Save All</button>
+      </div>
+      <textarea id="settingsEditor">Loading...</textarea>
+    </div>
+    
+    <div class="section">
+      <div class="section-header">
+        <span>FRAMEWORK-OVERRIDES.md</span>
+      </div>
+      <textarea id="overridesEditor">Loading...</textarea>
+    </div>
+    
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/settings');
+        const data = await res.json();
+        document.getElementById('settingsEditor').value = data.settings;
+        document.getElementById('overridesEditor').value = data.overrides;
+      } catch (e) {
+        document.getElementById('settingsEditor').value = '# Error loading settings';
+      }
+    }
+    
+    async function saveSettings() {
+      const settings = document.getElementById('settingsEditor').value;
+      const overrides = document.getElementById('overridesEditor').value;
+      const status = document.getElementById('status');
+      
+      try {
+        await fetch('/api/settings', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ settings, overrides })
+        });
+        status.textContent = 'Settings saved!';
+        status.className = 'status success';
+        setTimeout(() => status.className = 'status', 2000);
+      } catch (e) {
+        status.textContent = 'Error saving';
+        status.className = 'status error';
+      }
+    }
+    
+    loadSettings();
+  </script>
+</body>
+</html>

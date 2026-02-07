@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Context - OpenClaw Framework</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .back { color: #58a6ff; text-decoration: none; font-size: 1.5rem; }
+    h1 { font-size: 1.5rem; color: #58a6ff; }
+    .editor-container {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    .editor-header {
+      background: #21262d;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid #30363d;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .editor-header span { color: #8b949e; font-size: 0.85rem; }
+    textarea {
+      width: 100%;
+      min-height: 400px;
+      padding: 1rem;
+      background: #161b22;
+      border: none;
+      color: #c9d1d9;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      resize: vertical;
+    }
+    textarea:focus { outline: none; }
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-primary { background: #238636; color: white; }
+    .status {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      text-align: center;
+      display: none;
+    }
+    .status.success { display: block; background: #238636; }
+    .status.error { display: block; background: #da3633; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back">←</a>
+      <h1>🎯 Active Context</h1>
+    </div>
+    
+    <div class="editor-container">
+      <div class="editor-header">
+        <span>ACTIVE-CONTEXT.md</span>
+        <button class="btn btn-primary" onclick="saveContext()">Save Changes</button>
+      </div>
+      <textarea id="contextEditor">Loading...</textarea>
+    </div>
+    
+    <div class="status" id="status"></div>
+  </div>
+
+  <script>
+    async function loadContext() {
+      try {
+        const res = await fetch('/api/context');
+        const data = await res.json();
+        document.getElementById('contextEditor').value = data.content;
+      } catch (e) {
+        document.getElementById('contextEditor').value = '# Error loading context';
+      }
+    }
+    
+    async function saveContext() {
+      const content = document.getElementById('contextEditor').value;
+      const status = document.getElementById('status');
+      
+      try {
+        await fetch('/api/context', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        status.textContent = 'Saved successfully!';
+        status.className = 'status success';
+        setTimeout(() => status.className = 'status', 2000);
+      } catch (e) {
+        status.textContent = 'Error saving';
+        status.className = 'status error';
+      }
+    }
+    
+    loadContext();
+  </script>
+</body>
+</html>

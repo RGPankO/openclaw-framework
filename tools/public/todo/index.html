@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TODOs - OpenClaw Framework</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0d1117;
+      color: #c9d1d9;
+      min-height: 100vh;
+      padding: 2rem;
+    }
+    .container { max-width: 800px; margin: 0 auto; }
+    .header { display: flex; align-items: center; gap: 1rem; margin-bottom: 2rem; }
+    .back { color: #58a6ff; text-decoration: none; font-size: 1.5rem; }
+    h1 { font-size: 1.5rem; color: #58a6ff; }
+    .item {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      overflow: hidden;
+    }
+    .item-header {
+      padding: 1rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+    .item-header:hover { background: #21262d; }
+    .item-info h3 { margin-bottom: 0.25rem; font-size: 1rem; }
+    .item-info p { color: #8b949e; font-size: 0.8rem; }
+    .priority {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      margin-right: 0.5rem;
+    }
+    .priority.HIGH, .priority.URGENT { background: #da3633; }
+    .priority.MEDIUM { background: #9e6a03; }
+    .priority.LOW { background: #238636; }
+    .status-badge {
+      display: inline-block;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      background: #30363d;
+    }
+    .status-badge.NEW { background: #1f6feb; }
+    .status-badge.IN_PROGRESS { background: #9e6a03; }
+    .item-content {
+      display: none;
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #30363d;
+      background: #0d1117;
+    }
+    .item-content.open { display: block; }
+    .item-content textarea {
+      width: 100%;
+      min-height: 250px;
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 6px;
+      color: #c9d1d9;
+      padding: 1rem;
+      font-family: 'SF Mono', Monaco, monospace;
+      font-size: 0.85rem;
+      resize: vertical;
+    }
+    .item-content textarea:focus { outline: none; border-color: #58a6ff; }
+    .btn-row {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 1rem;
+    }
+    .btn-group { display: flex; gap: 0.5rem; }
+    .btn {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+    .btn:hover { opacity: 0.8; }
+    .btn-primary { background: #238636; color: white; }
+    .btn-success { background: #238636; color: white; }
+    .btn-danger { background: #da3633; color: white; }
+    .empty { text-align: center; color: #8b949e; padding: 3rem; }
+    .status-msg {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      padding: 1rem;
+      background: #238636;
+      border-radius: 6px;
+      display: none;
+    }
+    .status-msg.show { display: block; }
+    .cron-banner {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 1rem 1.5rem;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .cron-banner.loading { opacity: 0.5; }
+    .cron-status { display: flex; align-items: center; gap: 0.75rem; }
+    .cron-status .indicator {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #da3633;
+    }
+    .cron-status .indicator.on { background: #3fb950; }
+    .cron-status span { font-size: 0.9rem; }
+    .cron-toggle {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      background: #238636;
+      color: white;
+    }
+    .cron-toggle:hover { opacity: 0.8; }
+    .cron-toggle.off { background: #30363d; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <a href="/" class="back">←</a>
+      <h1>✅ TODOs</h1>
+    </div>
+    
+    <div class="cron-banner loading" id="cronBanner">
+      <div class="cron-status">
+        <div class="indicator" id="cronIndicator"></div>
+        <span id="cronStatusText">Loading cron status...</span>
+      </div>
+      <button class="cron-toggle" id="cronToggle" onclick="toggleTodoCron()" disabled>...</button>
+    </div>
+    
+    <div id="todoList"><div class="empty">Loading...</div></div>
+    <div class="status-msg" id="statusMsg">Saved!</div>
+  </div>
+
+  <script>
+    let todos = [];
+    
+    function showStatus(msg) {
+      const el = document.getElementById('statusMsg');
+      el.textContent = msg;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2000);
+    }
+    
+    async function loadTodos() {
+      const res = await fetch('/api/todos');
+      todos = await res.json();
+      render();
+    }
+    
+    function render() {
+      const list = document.getElementById('todoList');
+      if (todos.length === 0) {
+        list.innerHTML = '<div class="empty">No TODOs! 🎉</div>';
+        return;
+      }
+      
+      list.innerHTML = todos.map((t, i) => `
+        <div class="item" id="todo-${i}">
+          <div class="item-header" onclick="toggle(${i})">
+            <div class="item-info">
+              <h3>
+                <span class="priority ${t.priority}">${t.priority}</span>
+                ${escapeHtml(t.title)}
+                <span class="status-badge ${t.status}">${t.status}</span>
+              </h3>
+              <p>Created: ${t.created} | ${t.filename}</p>
+            </div>
+          </div>
+          <div class="item-content" id="content-${i}">
+            <textarea id="editor-${i}">${escapeHtml(t.content || '')}</textarea>
+            <div class="btn-row">
+              <div class="btn-group">
+                <button class="btn btn-success" onclick="complete(${i})">✓ Complete</button>
+                <button class="btn btn-danger" onclick="remove(${i})">Delete</button>
+              </div>
+              <button class="btn btn-primary" onclick="save(${i})">Save Changes</button>
+            </div>
+          </div>
+        </div>
+      `).join('');
+    }
+    
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+    
+    function toggle(i) {
+      document.getElementById(`content-${i}`).classList.toggle('open');
+    }
+    
+    async function save(i) {
+      const content = document.getElementById(`editor-${i}`).value;
+      await fetch(`/api/todos/${todos[i].id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content })
+      });
+      todos[i].content = content;
+      showStatus('Saved!');
+    }
+    
+    async function complete(i) {
+      if (!confirm('Mark as complete and archive?')) return;
+      await fetch(`/api/todos/${todos[i].id}/complete`, { method: 'POST' });
+      todos.splice(i, 1);
+      render();
+      showStatus('Completed!');
+    }
+    
+    async function remove(i) {
+      if (!confirm('Delete permanently?')) return;
+      await fetch(`/api/todos/${todos[i].id}`, { method: 'DELETE' });
+      todos.splice(i, 1);
+      render();
+      showStatus('Deleted!');
+    }
+    
+    // ===== TODO CRON =====
+    let todoCron = null;
+    
+    async function loadTodoCron() {
+      try {
+        const res = await fetch('/api/crons');
+        const data = await res.json();
+        // Find TODO cron (matches name containing "TODO" or "todo")
+        todoCron = data.jobs?.find(j => 
+          j.name?.toLowerCase().includes('todo') || 
+          j.payload?.text?.toLowerCase().includes('todo')
+        );
+        
+        const banner = document.getElementById('cronBanner');
+        const indicator = document.getElementById('cronIndicator');
+        const statusText = document.getElementById('cronStatusText');
+        const toggle = document.getElementById('cronToggle');
+        
+        banner.classList.remove('loading');
+        
+        if (todoCron) {
+          indicator.classList.toggle('on', todoCron.enabled);
+          statusText.textContent = todoCron.enabled 
+            ? 'TODO processing is ON' 
+            : 'TODO processing is OFF';
+          toggle.textContent = todoCron.enabled ? '⏸ Disable' : '▶ Enable';
+          toggle.classList.toggle('off', !todoCron.enabled);
+          toggle.disabled = false;
+        } else {
+          statusText.textContent = 'No TODO cron configured';
+          toggle.style.display = 'none';
+        }
+      } catch (e) {
+        document.getElementById('cronStatusText').textContent = 'Could not load cron status';
+        document.getElementById('cronToggle').style.display = 'none';
+      }
+    }
+    
+    async function toggleTodoCron() {
+      if (!todoCron) return;
+      
+      const newState = !todoCron.enabled;
+      document.getElementById('cronToggle').disabled = true;
+      
+      try {
+        await fetch(`/api/crons/${todoCron.id}/toggle`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: newState })
+        });
+        
+        // Also update user settings
+        await fetch('/api/settings/todo-cron', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ enabled: newState })
+        });
+        
+        showStatus(newState ? 'TODO cron enabled!' : 'TODO cron disabled!');
+        loadTodoCron();
+      } catch (e) {
+        showStatus('Error: ' + e.message);
+        document.getElementById('cronToggle').disabled = false;
+      }
+    }
+    
+    loadTodos();
+    loadTodoCron();
+  </script>
+</body>
+</html>
