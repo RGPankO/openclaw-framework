@@ -282,6 +282,7 @@ OpenClaw auto-loads these, but reinforce the priority:
 - `SOUL.md` — Personality, core truths
 - `IDENTITY.md` — Name, vibe
 - `USER.md` — About my human
+- `MISSION.md` — Purpose, what I'm here for
 
 ### 2. Framework (How I Operate)
 - `framework/FRAMEWORK.md` — Rules, security, delegation

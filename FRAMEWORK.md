@@ -30,6 +30,7 @@ The OpenClaw Framework provides structure, automation, and best practices for yo
 - `SOUL.md` — Personality, core truths
 - `IDENTITY.md` — Name, vibe  
 - `USER.md` — About my human
+- `MISSION.md` — Purpose, what I'm here for
 
 ### 2. Framework (How I Operate)
 - `framework/FRAMEWORK.md` — This file (rules, security, delegation)
