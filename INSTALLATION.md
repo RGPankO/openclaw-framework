@@ -180,23 +180,77 @@ Default role for direct communication with [user's name].
 
 ### Step 11: Set Up Default Tasks (If Enabled)
 
-Copy task templates and set up crons:
+Copy task templates and **create crons with these exact payloads**:
 
 **Self-Maintain (if enabled):**
 1. Copy `framework/TASKS/SELF-MAINTAIN.md` to `workspace/TASKS/SELF-MAINTAIN.md`
-2. Create cron: daily at 03:00
+2. Create cron using:
+```
+cron action=add job={
+  "name": "Self-Maintain",
+  "schedule": {"kind": "cron", "expr": "0 3 * * *", "tz": "UTC"},
+  "sessionTarget": "isolated",
+  "enabled": true,
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Read workspace/TASKS/SELF-MAINTAIN.md and follow the instructions. Read USER-SETTINGS.md for worker_model. Log results to daily-brief. If nothing needs attention, reply HEARTBEAT_OK."
+  },
+  "delivery": {"mode": "announce", "bestEffort": true}
+}
+```
 
 **Auto-Update (if enabled):**
 1. Copy `framework/TASKS/AUTO-UPDATE.md` to `workspace/TASKS/AUTO-UPDATE.md`
-2. Create cron: daily at 04:00
+2. Create cron using:
+```
+cron action=add job={
+  "name": "Auto-Update",
+  "schedule": {"kind": "cron", "expr": "0 4 * * *", "tz": "UTC"},
+  "sessionTarget": "isolated",
+  "enabled": true,
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Read workspace/TASKS/AUTO-UPDATE.md and follow the instructions. Read USER-SETTINGS.md for worker_model. If no updates available, reply HEARTBEAT_OK."
+  },
+  "delivery": {"mode": "announce", "bestEffort": true}
+}
+```
 
 **Reminder (if enabled):**
 1. Copy `framework/TASKS/REMINDER.md` to `workspace/TASKS/REMINDER.md`
-2. Create cron: every 30 minutes
+2. Create cron using:
+```
+cron action=add job={
+  "name": "Reminder",
+  "schedule": {"kind": "cron", "expr": "*/30 * * * *", "tz": "UTC"},
+  "sessionTarget": "isolated",
+  "enabled": true,
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Read workspace/TASKS/REMINDER.md and follow the instructions. Check workspace/reminders/*.md for active reminders. Send due notifications. Read USER-SETTINGS.md for worker_model. If no reminders due, reply HEARTBEAT_OK."
+  },
+  "delivery": {"mode": "announce", "bestEffort": true}
+}
+```
 
 **TODO Processor (if todo_system enabled):**
 1. Copy `framework/TASKS/TODO-PROCESSOR.md` to `workspace/TASKS/TODO-PROCESSOR.md`
-2. Create cron: every 2 hours
+2. Create cron using:
+```
+cron action=add job={
+  "name": "TODO Processor",
+  "schedule": {"kind": "cron", "expr": "0 */2 * * *", "tz": "UTC"},
+  "sessionTarget": "isolated",
+  "enabled": true,
+  "payload": {
+    "kind": "agentTurn",
+    "message": "Read workspace/TASKS/TODO-PROCESSOR.md and follow the instructions. Check workspace/todo/*.md for pending items. Read USER-SETTINGS.md for smart_model. If no TODOs need attention, reply HEARTBEAT_OK."
+  },
+  "delivery": {"mode": "announce", "bestEffort": true}
+}
+```
+
+**Note:** Adjust timezone (`tz`) to user's preference. Set `enabled: false` if user wants cron disabled by default.
 
 ### Step 12: Create First Daily Brief
 

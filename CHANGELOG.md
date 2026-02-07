@@ -2,6 +2,17 @@
 
 All notable changes to the OpenClaw Framework.
 
+## [0.1.3] - 2026-02-07
+
+### Fixed
+- **Cron creation instructions** — INSTALLATION.md now includes exact cron payloads
+  - Previously only said "Create cron" without specifying the payload
+  - Now includes full `cron action=add` commands with proper payloads
+  - Each cron references its TASKS/*.md file for instructions
+  - Fixes: Reminders not working on new installs
+
+---
+
 ## [0.1.2] - 2026-02-07
 
 ### Added

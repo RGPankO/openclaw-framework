@@ -202,7 +202,7 @@ Your files in `workspace/` are never touched by updates.
 
 ## Version
 
-Current: 0.1.2
+Current: 0.1.3
 
 See CHANGELOG.md for version history.
 
