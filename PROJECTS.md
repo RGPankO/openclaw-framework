@@ -2,9 +2,9 @@
 
 ## Rule
 
-All cloned repositories and project work go in `workspace/projects/`.
+All project work goes in `workspace/projects/`.
 
-**Never** clone repos directly into workspace root. It clutters the main directory and makes navigation harder.
+**Never** clone repos or create projects directly in workspace root. It clutters the main directory and makes navigation harder.
 
 ## Directory Structure
 
@@ -13,38 +13,46 @@ Each project has a standardized structure:
 ```
 workspace/projects/
 ├── my-app/
-│   ├── repo/                   # Git repository (version controlled)
+│   ├── project/                # The actual work (git repo, research docs, etc.)
 │   └── library/                # Agent's knowledge (local only)
 │       ├── research.md
 │       ├── decisions.md
 │       ├── plans.md
 │       └── notes.md
 ├── another-project/
-│   ├── repo/
+│   ├── project/
 │   └── library/
 ├── client-work/                # Subdirectory for organization
 │   ├── project-a/
-│   │   ├── repo/
+│   │   ├── project/
 │   │   └── library/
 │   └── project-b/
-│       ├── repo/
+│       ├── project/
 │       └── library/
 └── experiments/                # Quick experiments
 ```
 
 ## The Two Elements
 
-### 1. repo/ (The Code)
+### 1. project/ (The Work)
 
-The actual git repository. Version controlled, pushed to GitHub.
+The actual project content. Could be:
+- **Code:** Git repository, pushed to GitHub
+- **Research:** Structured research documents
+- **Marketing:** Campaigns, copy, assets
+- **Any work type:** Whatever the project needs
 
 ```bash
-# Clone into repo/
+# Clone a repo into project/
 cd ~/.openclaw/workspace/projects/[name]
-git clone <url> repo
+git clone <url> project
 
-# Or init new
-mkdir -p repo && cd repo && git init
+# Or init new code project
+mkdir -p project && cd project && git init
+
+# Or create research project
+mkdir -p project && cd project
+touch overview.md findings.md conclusions.md
 ```
 
 ### 2. library/ (Agent's Knowledge)
@@ -79,7 +87,7 @@ A task that works on a project references it in TASK.md:
 # Project Dev Task
 
 ## Project Location
-- **Repo:** `projects/[name]/repo/`
+- **Project:** `projects/[name]/project/`
 - **Library:** `projects/[name]/library/`
 
 ## Before Starting
@@ -204,10 +212,10 @@ git push origin main
 ```bash
 # 1. Create project structure
 cd ~/.openclaw/workspace/projects
-mkdir -p myproject/repo myproject/library
+mkdir -p myproject/project myproject/library
 
-# 2. Init or clone repo
-cd myproject/repo
+# 2. Init or clone (for code projects)
+cd myproject/project
 git init  # or: git clone <url> .
 
 # 3. Create library files
@@ -222,7 +230,7 @@ mkdir -p ~/.openclaw/workspace/TASKS/MYPROJECT
 ## Organization Tips
 
 - One project = one directory under projects/
-- repo/ is always the git content
+- project/ is always the git content
 - library/ is always local knowledge
 - Group related projects in subdirectories
 - Use clear, descriptive folder names

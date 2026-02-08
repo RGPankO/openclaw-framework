@@ -75,12 +75,12 @@ If a feature is OFF (or missing), don't mention it or try to use it.
 ## Quick Reference
 
 ### Projects (`workspace/projects/`)
-All cloned repos and project work go here. Never clutter the main workspace with project files.
+All project work goes here. Never clutter the main workspace with project files.
 
 **Structure:**
 ```
 projects/[name]/
-├── repo/        # Git repository (version controlled)
+├── project/     # The actual work (git repo, research docs, etc.)
 └── library/     # Agent's knowledge (local only)
     ├── research.md
     ├── decisions.md
@@ -88,9 +88,9 @@ projects/[name]/
     └── notes.md
 ```
 
-- **repo/** — The actual git clone, pushed to GitHub
+- **project/** — The actual work (code repo, research docs, marketing assets, etc.)
 - **library/** — Accumulated knowledge about the project (local only, 4 standardized files)
-- **Repos are PRIVATE by default** — never create public without user approval
+- **Git repos are PRIVATE by default** — never create public without user approval
 - **Feature branch workflow** — never push directly to main/master
 - **Merge only after user confirms** — "looks good" / "merge it" required
 - **Details:** `framework/PROJECTS.md`
