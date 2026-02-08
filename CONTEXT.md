@@ -56,7 +56,7 @@ The day's activity log. ALL sessions (main + crons) append here.
 **Did:** Checked pipeline, updated ACTIVE-CONTEXT with priorities
 **For next:** 3 apps ready for review, QuickNutrition needs TestFlight test
 
-## 09:30 — Main Session (with Plamen)
+## 09:30 — Main Session (with user)
 **Did:** Built framework structure together, added SECURITY.md, CONTEXT.md
 **For next:** Framework v0.1.0 ready, need to wire into our AGENTS.md
 
@@ -190,7 +190,7 @@ When you see "Summary unavailable due to context limits" or similar:
         Reads: ACTIVE-CONTEXT.md, daily-brief
         Sees: Full picture + all handoff notes
         Does: Posts helpful comment, notes which subs
-        Writes: "Did: Posted in r/productivity. For next: Check replies in 2h"
+        Writes: "Did: Posted in r/example. For next: Check replies in 2h"
 ```
 
 **Result:** Each session knows what came before. No blind spots.

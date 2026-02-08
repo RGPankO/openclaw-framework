@@ -64,7 +64,7 @@ This is the shared log. Everyone reads it, everyone writes to it.
 - Updated ACTIVE-CONTEXT with QuickNutrition as priority
 - Spawned Codex sub-agent for dark mode feature
 
-## 10:15 — Main Session (with Plamen)
+## 10:15 — Main Session (with user)
 - Built LOGGING.md for framework
 - Fixed TypeScript errors in BudgetVault
 - Decision: Ship framework v0.1.0 after testing
@@ -204,7 +204,7 @@ If no action: Just append `## HH:MM — Heartbeat: OK`
 - 3 apps ready for TestFlight
 - Updated ACTIVE-CONTEXT: focus on QuickNutrition launch
 
-## 09:30 — Main Session (with Plamen)
+## 09:30 — Main Session (with user)
 - Built framework structure together
 - Created: SECURITY.md, CONTEXT.md, LOGGING.md
 - Decision: Ship v0.1.0 after testing
@@ -212,7 +212,7 @@ If no action: Just append `## HH:MM — Heartbeat: OK`
 ## 10:00 — Heartbeat: OK
 
 ## 10:30 — Reddit Cron
-- Posted helpful comment in r/productivity
+- Posted helpful comment in r/example
 - Logged to memory/reddit-activity.md
 
 ## 11:00 — Heartbeat: OK
