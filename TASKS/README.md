@@ -12,11 +12,17 @@ TASKS/[NAME]/
 └── runs/        # Session history (append-only logs)
 ```
 
-## Before Starting
+## Execution Order
+
+The cron tells you: "Read README.md, then read TASK.md"
+
+After reading TASK.md, before doing the work:
 
 1. **Read `HANDOFF.md`** — Understand current state, what happened last time, advice from previous run
 2. **Optionally scan `runs/`** — If you need more historical context, check recent session logs
-3. **Read `TASK.md`** — Follow the specific task instructions
+3. **If task specifies a Role** — Read the role file mentioned in TASK.md
+
+Then execute the task instructions.
 
 ## After Completing
 

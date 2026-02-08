@@ -134,11 +134,11 @@ Append-only directory of session logs. Each run creates a new file.
 When a task cron fires:
 
 ```
-1. Load personality — Read SOUL.md
-2. Load role — Read the role file specified in the task
-3. Read TASK.md — What am I doing?
-4. Read HANDOFF.md — Where did we leave off?
-5. (Optional) Scan runs/ if need more context
+1. Read TASKS/README.md — Learn execution rules
+2. Read TASKS/[NAME]/TASK.md — Specific instructions
+3. Read TASKS/[NAME]/HANDOFF.md — Current state from last run
+4. (Optional) Scan runs/ — If need more historical context
+5. If TASK.md specifies a Role — Read that role file
 6. Execute the task instructions
 7. Update HANDOFF.md — Current state for next run
 8. Write to runs/YYYY-MM-DD-HHMM.md — Session log
