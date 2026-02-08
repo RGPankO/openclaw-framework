@@ -2,6 +2,29 @@
 
 All notable changes to the OpenClaw Framework.
 
+## [0.1.4] - 2026-02-08
+
+### Changed
+- **TASKS structure overhaul** — Tasks now use directories instead of flat files
+  - Each task: `TASKS/[NAME]/TASK.md`, `HANDOFF.md`, `runs/`
+  - TASK.md = static instructions
+  - HANDOFF.md = dynamic state, updated each run
+  - runs/ = append-only session history
+  - Cron prompts now minimal: just "Read TASKS/[NAME]/TASK.md"
+- **PROJECTS structure overhaul** — Projects now have standardized library
+  - Each project: `projects/[name]/repo/` + `library/`
+  - repo/ = git repository (version controlled)
+  - library/ = agent's accumulated knowledge (local only)
+  - 4 standardized library files: research.md, decisions.md, plans.md, notes.md
+
+### Added
+- **TASKS/EXAMPLE/** — Template directory with TASK.md, HANDOFF.md, runs/
+- Updated FRAMEWORK.md with new structures
+- Updated TASKS.md with directory structure documentation
+- Updated PROJECTS.md with library structure documentation
+
+---
+
 ## [0.1.3] - 2026-02-07
 
 ### Fixed

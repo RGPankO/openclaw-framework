@@ -6,129 +6,164 @@
 
 We call them "Tasks" for non-technical users. When the user says "Task," they mean a scheduled cron job.
 
-Internally, these are OpenClaw cron jobs. The framework just provides a user-friendly name.
+## Directory Structure
 
-## Directory
-
-Your tasks live in `workspace/TASKS/` (NOT inside framework/):
+Each task gets its own directory with a standardized structure:
 
 ```
 workspace/TASKS/
-├── SELF-MAINTAIN.md      # Daily health check
-├── AUTO-UPDATE.md        # Framework update check
-├── REMINDER.md           # Reminder execution
-├── REDDIT.md             # Reddit engagement
-└── [CUSTOM].md           # User-defined tasks
+├── TANKSIO/                    # Task directory
+│   ├── TASK.md                 # Instructions (static)
+│   ├── HANDOFF.md              # Current state (dynamic, updated each run)
+│   └── runs/                   # Session history (append-only)
+│       ├── 2026-02-08-0800.md
+│       └── 2026-02-08-1400.md
+├── REDDIT/
+│   ├── TASK.md
+│   ├── HANDOFF.md
+│   └── runs/
+└── [CUSTOM]/
+    ├── TASK.md
+    ├── HANDOFF.md
+    └── runs/
 ```
 
-**Templates** are in `framework/TASKS/` — copy them to `workspace/TASKS/` and customize.
+**ALWAYS these 3 elements. No custom files at task level.**
 
-## Task File Structure
+## The Three Elements
+
+### 1. TASK.md (Static Instructions)
+
+What to do, where the project is, role to assume. Rarely changes.
 
 ```markdown
-# Task: [Name]
+# [Task Name]
 
-## Schedule
-
-[Cron schedule — how often this runs]
-Examples: "Every 30 minutes", "Daily at 03:00", "Every 4 hours"
+## Project Location
+- **Repo:** `projects/[name]/repo/`
+- **Library:** `projects/[name]/library/`
 
 ## Role
+Read `ROLES/[ROLE].md` for behavioral context.
 
-[Which role file to load]
-Example: `workspace/ROLES/REDDIT.md`
-
-## Purpose
-
-[What this task accomplishes]
+## Before Starting
+1. Read `HANDOFF.md` — current state
+2. Optionally scan `runs/` for additional context
+3. Check project `library/` if applicable
 
 ## Instructions
+[What to do each run]
 
-[Step-by-step what to do — be explicit]
-
-1. Step one
-2. Step two
-3. Step three
-
-## Success Criteria
-
-[How to know the task completed successfully]
-
-## Error Handling
-
-[What to do if something fails]
-
-## Logging
-
-[Where to log activity]
+## Before Ending
+1. Update `HANDOFF.md` with current state and advice for next run
+2. Write session log to `runs/YYYY-MM-DD-HHMM.md`
+3. Update project `library/` if you learned something lasting
+4. Send summary to user if configured
 ```
+
+### 2. HANDOFF.md (Dynamic State)
+
+A living document updated every run. The agent reads it at start, updates it at end.
+
+**Key behaviors:**
+- Remove stale/outdated information
+- Add fresh context and current state
+- Write as if advising the next agent: "Continue from X, be aware of Y"
+- Keep it concise but useful
+
+```markdown
+# Handoff
+
+## Current State
+[Where things stand right now]
+
+## Last Session
+[What was just done, when]
+
+## Next Steps
+[What should happen next]
+
+## Watch Out For
+[Gotchas, blockers, things to remember]
+
+## Notes
+[Anything else useful for the next run]
+```
+
+### 3. runs/ (Session History)
+
+Append-only directory of session logs. Each run creates a new file.
+
+**Filename format:** `YYYY-MM-DD-HHMM.md`
+
+**Contents:**
+- Detailed log of what was done
+- Commands run, files changed
+- Decisions made and why
+- Same content as Telegram summary + technical details
+
+**How to use:**
+- Agents can scan `runs/` for historical context if needed
+- Useful for understanding patterns, past decisions, debugging
+- Don't read every file — scan recent ones when context helps
 
 ## How Tasks Execute
 
 When a task cron fires:
 
-1. **Load personality** — Read SOUL.md
-2. **Load role** — Read the role file specified in the task
-3. **Read task instructions** — This task file
-4. **Execute** — Follow the instructions
-5. **Log** — Record what was done
-6. **Exit** — Don't start new work beyond the task scope
+```
+1. Read TASK.md — What am I doing?
+2. Read HANDOFF.md — Where did we leave off?
+3. (Optional) Scan runs/ if need more context
+4. Execute the task instructions
+5. Update HANDOFF.md — Current state for next run
+6. Write to runs/YYYY-MM-DD-HHMM.md — Session log
+7. Send summary if configured
+```
 
-## Setup
+## Cron Configuration
 
-1. Copy task templates from `framework/TASKS/` to `workspace/TASKS/`
-2. Customize for your needs
-3. Set up the corresponding cron jobs in OpenClaw
+**Keep cron prompts minimal.** All instructions live in files:
+
+```
+# [TASK NAME]
+
+Read TASKS/[NAME]/TASK.md and follow instructions.
+```
+
+Benefits:
+- Edit instructions without touching cron config
+- Version control task instructions
+- Cleaner separation of concerns
 
 ## Creating Tasks
 
-**Main agent creates tasks** when user asks for recurring automation:
+When user asks for recurring automation:
 
-1. Create `workspace/TASKS/[NAME].md` with instructions (NOT in framework/)
-2. Create corresponding role in `workspace/ROLES/` if needed
-3. Set up the cron job in OpenClaw
-4. Confirm to user: "Created task [NAME], runs [schedule]"
+1. Create directory: `workspace/TASKS/[NAME]/`
+2. Create `TASK.md` with instructions
+3. Create empty `HANDOFF.md` (first run will populate)
+4. Create `runs/` directory
+5. Create role in `workspace/ROLES/` if needed
+6. Set up cron job with minimal prompt
 
-## Managing Tasks
+## Task Templates
 
-Users can manage tasks via:
+Copy from `framework/TASKS/EXAMPLE/` to get started:
+- `TASK.md` — Template with all sections
+- `HANDOFF.md` — Empty starting template
 
-**Chat:**
-- "Turn off the Reddit task"
-- "Run the reminder task now"
-- "Change self-maintain to run weekly"
-
-**Web UI (Tasks Manager):**
-- View all tasks and their status
-- Toggle tasks on/off
-- Click "Run Now" for immediate execution
-- See last run time and results
+Built-in task templates in `framework/TASKS/`:
+- `SELF-MAINTAIN.md` — Daily health check
+- `AUTO-UPDATE.md` — Framework updates
+- `REMINDER.md` — Reminder execution
+- `TODO-PROCESSOR.md` — Process one-off TODOs
 
 ## Important Rules
 
-1. **Minimum config in cron** — The cron job just triggers; all instructions live in the .md file
-2. **Tasks read, don't write policy** — Task agents follow instructions, don't change framework files
-3. **One task, one purpose** — Don't combine multiple jobs into one task
-4. **Explicit instructions** — Task agents use simpler models; be very clear
-5. **Always log** — Every task execution should be logged somewhere
-6. **Templates stay in framework/** — Your actual tasks go in `workspace/TASKS/`
-7. **Version control your tasks** — They're part of your "self"
-
-## Built-in Task Templates
-
-Copy these from `framework/TASKS/` to `workspace/TASKS/`:
-
-### SELF-MAINTAIN.md
-- Schedule: Daily at 03:00
-- Purpose: Check for file bloat, duplicates, health issues
-- Template: `framework/TASKS/SELF-MAINTAIN.md`
-
-### AUTO-UPDATE.md
-- Schedule: Daily at 04:00
-- Purpose: Check for framework updates
-- Template: `framework/TASKS/AUTO-UPDATE.md`
-
-### REMINDER.md
-- Schedule: Every 30 minutes
-- Purpose: Execute active reminders
-- Template: `framework/TASKS/REMINDER.md`
+1. **Standardized structure** — Always TASK.md, HANDOFF.md, runs/
+2. **No custom files at task level** — Use runs/ for history, HANDOFF.md for state
+3. **HANDOFF.md is dynamic** — Update every run, remove stale info
+4. **runs/ is append-only** — Never delete or modify past logs
+5. **Minimal cron prompts** — Instructions live in files, not cron config
+6. **Task agents follow instructions** — Don't modify framework or policy files
