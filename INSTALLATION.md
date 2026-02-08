@@ -180,10 +180,12 @@ Default role for direct communication with [user's name].
 
 ### Step 11: Set Up Default Tasks (If Enabled)
 
-Copy task templates and **create crons with these exact payloads**:
+Copy task directories and **create crons with these exact payloads**:
+
+Each task is a directory with: `TASK.md`, `HANDOFF.md`, `runs/`
 
 **Self-Maintain (if enabled):**
-1. Copy `framework/TASKS/SELF-MAINTAIN.md` to `workspace/TASKS/SELF-MAINTAIN.md`
+1. Copy `framework/TASKS/SELF-MAINTAIN/` to `workspace/TASKS/SELF-MAINTAIN/`
 2. Create cron using:
 ```
 cron action=add job={
@@ -193,14 +195,14 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read workspace/TASKS/SELF-MAINTAIN.md and follow the instructions. Read USER-SETTINGS.md for worker_model. Log results to daily-brief. If nothing needs attention, reply HEARTBEAT_OK."
+    "message": "Read TASKS/SELF-MAINTAIN/TASK.md and follow instructions."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
 ```
 
 **Auto-Update (if enabled):**
-1. Copy `framework/TASKS/AUTO-UPDATE.md` to `workspace/TASKS/AUTO-UPDATE.md`
+1. Copy `framework/TASKS/AUTO-UPDATE/` to `workspace/TASKS/AUTO-UPDATE/`
 2. Create cron using:
 ```
 cron action=add job={
@@ -210,14 +212,14 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read workspace/TASKS/AUTO-UPDATE.md and follow the instructions. Read USER-SETTINGS.md for worker_model. If no updates available, reply HEARTBEAT_OK."
+    "message": "Read TASKS/AUTO-UPDATE/TASK.md and follow instructions."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
 ```
 
 **Reminder (if enabled):**
-1. Copy `framework/TASKS/REMINDER.md` to `workspace/TASKS/REMINDER.md`
+1. Copy `framework/TASKS/REMINDER/` to `workspace/TASKS/REMINDER/`
 2. Create cron using:
 ```
 cron action=add job={
@@ -227,14 +229,14 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read workspace/TASKS/REMINDER.md and follow the instructions. Check workspace/reminders/*.md for active reminders. Send due notifications. Read USER-SETTINGS.md for worker_model. If no reminders due, reply HEARTBEAT_OK."
+    "message": "Read TASKS/REMINDER/TASK.md and follow instructions."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
 ```
 
 **TODO Processor (if todo_system enabled):**
-1. Copy `framework/TASKS/TODO-PROCESSOR.md` to `workspace/TASKS/TODO-PROCESSOR.md`
+1. Copy `framework/TASKS/TODO-PROCESSOR/` to `workspace/TASKS/TODO-PROCESSOR/`
 2. Create cron using:
 ```
 cron action=add job={
@@ -244,7 +246,7 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read workspace/TASKS/TODO-PROCESSOR.md and follow the instructions. Check workspace/todo/*.md for pending items. Read USER-SETTINGS.md for smart_model. If no TODOs need attention, reply HEARTBEAT_OK."
+    "message": "Read TASKS/TODO-PROCESSOR/TASK.md and follow instructions."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }

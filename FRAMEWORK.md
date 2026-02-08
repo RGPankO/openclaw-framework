@@ -253,17 +253,17 @@ Daily task that checks for:
 - Duplicate instructions
 - Orphaned files
 - Health issues
-- **Template:** `framework/TASKS/SELF-MAINTAIN.md`
+- **Template:** `framework/TASKS/SELF-MAINTAIN/`
 
 ### Auto-Update
 If enabled, daily check for framework updates.
 - Fetches remote, shows diff (no file changes yet)
 - User confirms before applying
-- **Template:** `framework/TASKS/AUTO-UPDATE.md`
+- **Template:** `framework/TASKS/AUTO-UPDATE/`
 
 ### Reminder Execution
 If enabled, runs every 30 min to check and send reminders.
-- **Template:** `framework/TASKS/REMINDER.md`
+- **Template:** `framework/TASKS/REMINDER/`
 
 ## Framework Overrides
 

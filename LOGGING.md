@@ -39,7 +39,7 @@ This is the shared log. Everyone reads it, everyone writes to it.
 
 | Feature | Log Location |
 |---------|--------------|
-| Reddit | `memory/reddit-activity.md` |
+| Community Engagement | `memory/engagement-activity.md` |
 | Research | `memory/research-notes/` |
 | Reminders | In each reminder's Log section |
 
@@ -61,7 +61,7 @@ This is the shared log. Everyone reads it, everyone writes to it.
 ```markdown
 ## 09:30 — CEO Cron
 - Reviewed pipeline: 3 apps ready, 2 blocked
-- Updated ACTIVE-CONTEXT with QuickNutrition as priority
+- Updated ACTIVE-CONTEXT with ProjectX as priority
 - Spawned Codex sub-agent for dark mode feature
 
 ## 10:15 — Main Session (with user)
@@ -202,7 +202,7 @@ If no action: Just append `## HH:MM — Heartbeat: OK`
 ## 09:00 — CEO Cron
 - Reviewed pipeline status
 - 3 apps ready for TestFlight
-- Updated ACTIVE-CONTEXT: focus on QuickNutrition launch
+- Updated ACTIVE-CONTEXT: focus on ProjectX launch
 
 ## 09:30 — Main Session (with user)
 - Built framework structure together
@@ -211,9 +211,9 @@ If no action: Just append `## HH:MM — Heartbeat: OK`
 
 ## 10:00 — Heartbeat: OK
 
-## 10:30 — Reddit Cron
-- Posted helpful comment in r/example
-- Logged to memory/reddit-activity.md
+## 10:30 — Research Cron
+- Completed scheduled research
+- Logged findings to memory
 
 ## 11:00 — Heartbeat: OK
 ```

@@ -11,7 +11,7 @@ Your roles live in `workspace/ROLES/` (NOT inside framework/):
 ```
 workspace/ROLES/
 ├── MAIN.md           # Default communication role
-├── REDDIT.md         # Reddit engagement role
+├── RESEARCH.md       # Research role
 ├── RESEARCH.md       # Research role
 └── [CUSTOM].md       # User-defined roles
 ```
@@ -24,7 +24,7 @@ workspace/ROLES/
 |--------|----------------------|-------------------|
 | What | Who you ARE | What you're DOING |
 | Changes | Rarely | Per context/task |
-| Examples | Warm, direct, curious | "Build Reddit karma", "Deep dive research" |
+| Examples | Warm, direct, curious | "Deep dive research", "Market analysis" |
 
 **Personality is constant. Roles are contextual.**
 
@@ -103,45 +103,45 @@ Default role for direct communication with user.
 - System improves over time
 ```
 
-## Example: REDDIT.md
+## Example: RESEARCH.md
 
 ```markdown
-# Role: Reddit
+# Role: Research
 
 ## Purpose
 
-Build authentic presence and karma on Reddit.
+Conduct thorough research and gather actionable insights.
 
 ## When Active
 
-- Reddit engagement task (cron)
-- When explicitly asked to post/comment on Reddit
+- Research task (cron)
+- When explicitly asked to research a topic
 
 ## Goals
 
-1. Build karma through genuine helpfulness
-2. Establish presence in target communities
-3. Eventually: subtle, authentic promotion
+1. Find relevant, accurate information
+2. Synthesize findings into actionable insights
+3. Document sources and reasoning
 
 ## Behaviors
 
-- 9:1 ratio: 9 helpful posts before 1 promotional
-- Match subreddit tone and culture
-- Add genuine value, not generic responses
-- Log all activity to activity file
+- Verify information from multiple sources
+- Prioritize primary sources over secondary
+- Note confidence levels for findings
+- Log all research to appropriate files
 
 ## Constraints
 
-- No posting during sleep hours (1am-9am user time)
-- No obvious self-promotion until karma threshold (100+)
-- No spamming multiple subs with same content
-- Check activity log before posting (avoid duplicates)
+- No speculation presented as fact
+- Always cite sources
+- Check existing research before duplicating work
+- Stay focused on the research scope
 
 ## Success Metrics
 
-- Karma growth
-- Positive engagement (upvotes, replies)
-- No bans or warnings
+- Actionable findings produced
+- Sources properly documented
+- Information accuracy
 ```
 
 ## Loading Roles

@@ -54,7 +54,7 @@ The day's activity log. ALL sessions (main + crons) append here.
 
 ## 09:00 — CEO Cron
 **Did:** Checked pipeline, updated ACTIVE-CONTEXT with priorities
-**For next:** 3 apps ready for review, QuickNutrition needs TestFlight test
+**For next:** 3 apps ready for review, ProjectX needs TestFlight test
 
 ## 09:30 — Main Session (with user)
 **Did:** Built framework structure together, added SECURITY.md, CONTEXT.md
@@ -172,11 +172,11 @@ When you see "Summary unavailable due to context limits" or similar:
 09:00 — CEO Cron wakes up
         Reads: ACTIVE-CONTEXT.md, daily-brief
         Does: Checks pipeline, updates priorities
-        Writes: "Did: X, Y, Z. For next: QuickNutrition needs testing"
+        Writes: "Did: X, Y, Z. For next: ProjectX needs testing"
 
 09:30 — User starts main session
         Reads: ACTIVE-CONTEXT, daily-brief, MEMORY
-        Sees: CEO's handoff notes — knows QuickNutrition needs testing
+        Sees: CEO's handoff notes — knows ProjectX needs testing
         Does: Works with user on framework
         Writes: "Did: Built framework. For next: Wire into AGENTS.md"
 
@@ -186,11 +186,11 @@ When you see "Summary unavailable due to context limits" or similar:
         Does: Health check, finds nothing urgent
         Writes: "Did: Health check passed. For next: Nothing pending"
 
-10:30 — Reddit cron wakes up
+10:30 — Research cron wakes up
         Reads: ACTIVE-CONTEXT.md, daily-brief
         Sees: Full picture + all handoff notes
         Does: Posts helpful comment, notes which subs
-        Writes: "Did: Posted in r/example. For next: Check replies in 2h"
+        Writes: "Did: Completed research task. For next: Check replies in 2h"
 ```
 
 **Result:** Each session knows what came before. No blind spots.

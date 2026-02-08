@@ -14,7 +14,7 @@ Each task gets its own directory with a standardized structure:
 
 ```
 workspace/TASKS/
-├── TANKSIO/                    # Task directory
+├── MYPROJECT/                    # Task directory
 │   ├── TASK.md                 # Instructions (static)
 │   ├── HANDOFF.md              # Current state (dynamic, updated each run)
 │   └── runs/                   # Session history (append-only)
@@ -184,7 +184,7 @@ Benefits:
 Users can manage tasks via:
 
 **Chat:**
-- "Turn off the Reddit task"
+- "Turn off the research task"
 - "Run the reminder task now"
 - "Change self-maintain to run weekly"
 

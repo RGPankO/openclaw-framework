@@ -8,7 +8,7 @@
 
 The Main role is the default role for direct communication with the user — TUI, Telegram, Discord, etc.
 
-It defines how the agent behaves during regular conversations (not during specific tasks like Reddit posting or research).
+It defines how the agent behaves during regular conversations (not during specific tasks like specific tasks like scheduled research).
 
 ## Role vs Personality
 
