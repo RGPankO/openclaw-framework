@@ -75,7 +75,7 @@ If a feature is OFF (or missing), don't mention it or try to use it.
 ## Quick Reference
 
 ### Projects (`workspace/projects/`)
-All cloned repos and project work go here. Never clutter the main workspace.
+All cloned repos and project work go here. Never clutter the main workspace with project files.
 
 **Structure:**
 ```
@@ -90,8 +90,9 @@ projects/[name]/
 
 - **repo/** — The actual git clone, pushed to GitHub
 - **library/** — Accumulated knowledge about the project (local only, 4 standardized files)
-- **Private by default** — never create public repos without user approval
+- **Repos are PRIVATE by default** — never create public without user approval
 - **Feature branch workflow** — never push directly to main/master
+- **Merge only after user confirms** — "looks good" / "merge it" required
 - **Details:** `framework/PROJECTS.md`
 
 ### TODOs (`workspace/todo/`)
@@ -114,6 +115,7 @@ Role definitions that shape agent behavior for specific contexts.
 
 ### Tasks (`workspace/TASKS/`)
 Task instructions for cron jobs. User-facing term for "crons."
+- **CRITICAL:** When user says "Task," they mean cron job
 
 **Structure:** Each task gets its own directory:
 ```
@@ -126,8 +128,10 @@ TASKS/[NAME]/
 - **TASK.md** — What to do, where the project is, role to assume
 - **HANDOFF.md** — Dynamic state, read at start, update at end
 - **runs/** — Detailed session logs, one file per run
+- Task agents read their task file + relevant role file
 - **Cron prompts are minimal** — Just "Read TASKS/[NAME]/TASK.md"
-- **Templates:** `framework/TASKS/EXAMPLE/`
+- **How to use:** Read `framework/TASKS.md` and `framework/TASKS/EXAMPLE/` for templates
+- **User's tasks:** Created in `workspace/TASKS/` based on user needs
 - **Details:** `framework/TASKS.md`
 
 ### Mission (`workspace/MISSION.md`)
