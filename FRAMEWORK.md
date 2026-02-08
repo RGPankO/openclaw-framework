@@ -129,7 +129,7 @@ TASKS/[NAME]/
 - **HANDOFF.md** — Dynamic state, read at start, update at end
 - **runs/** — Detailed session logs, one file per run
 - Task agents read their task file + relevant role file
-- **Cron prompts are minimal** — Just "Read TASKS/[NAME]/TASK.md"
+- **Cron prompts are minimal** — "Read TASKS/README.md, then TASKS/[NAME]/TASK.md"
 - **How to use:** Read `framework/TASKS.md` and `framework/TASKS/EXAMPLE/` for templates
 - **User's tasks:** Created in `workspace/TASKS/` based on user needs
 - **Details:** `framework/TASKS.md`

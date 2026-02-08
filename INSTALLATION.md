@@ -195,7 +195,7 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read TASKS/SELF-MAINTAIN/TASK.md and follow instructions."
+    "message": "Read TASKS/README.md for execution rules. Then read TASKS/SELF-MAINTAIN/TASK.md and follow instructions."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
@@ -212,7 +212,7 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read TASKS/AUTO-UPDATE/TASK.md and follow instructions."
+    "message": "Read TASKS/README.md for execution rules. Then read TASKS/AUTO-UPDATE/TASK.md and follow instructions."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
@@ -229,7 +229,7 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read TASKS/REMINDER/TASK.md and follow instructions."
+    "message": "Read TASKS/README.md for execution rules. Then read TASKS/REMINDER/TASK.md and follow instructions."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
@@ -246,7 +246,7 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read TASKS/TODO-PROCESSOR/TASK.md and follow instructions."
+    "message": "Read TASKS/README.md for execution rules. Then read TASKS/TODO-PROCESSOR/TASK.md and follow instructions."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }

@@ -153,12 +153,17 @@ When a task cron fires:
 ```
 # [TASK NAME]
 
-Read TASKS/[NAME]/TASK.md and follow instructions.
+Read TASKS/README.md for execution rules. Then read TASKS/[NAME]/TASK.md and follow instructions.
 ```
+
+**The two files:**
+- `TASKS/README.md` — Generic execution rules (read HANDOFF, write to runs/, etc.)
+- `TASKS/[NAME]/TASK.md` — Specific task instructions
 
 Benefits:
 - Edit instructions without touching cron config
 - Version control task instructions
+- Generic rules in one place, specific instructions per task
 - Cleaner separation of concerns
 
 ## Setup
