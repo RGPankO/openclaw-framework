@@ -337,6 +337,29 @@ nohup node server.js > /tmp/framework-server.log 2>&1 &
 
 Access at: `http://localhost:8890/`
 
+### Step 16: Configure Memory Flush (Recommended)
+
+Ensure the instance's `openclaw.json` has `memoryFlush` configured for better memory persistence across compactions:
+
+```json5
+{
+  agents: {
+    defaults: {
+      compaction: {
+        mode: "safeguard",
+        memoryFlush: {
+          enabled: true,
+          softThresholdTokens: 6000,
+          prompt: "Session is about to be compacted. Before it happens, write anything worth remembering to memory/YYYY-MM-DD.md — decisions made, lessons learned, context that would be lost, user preferences discovered. Focus on things that matter, not routine actions. Reply with NO_REPLY when done."
+        }
+      }
+    }
+  }
+}
+```
+
+This runs a silent agent turn before compaction, giving the agent a chance to persist important context to disk. The daily memory files are read on session startup, so this information survives compaction.
+
 ---
 
 ## Post-Installation

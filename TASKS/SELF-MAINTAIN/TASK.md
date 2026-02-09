@@ -78,7 +78,31 @@ Find reminders with status COMPLETED that are still in active directory:
 - Should be archived or deleted
 - Clean up or flag
 
-### 7. Generate Report
+### 7. Check OpenClaw Version
+
+Check if a newer version of OpenClaw is available:
+
+```bash
+# Current version
+openclaw --version
+
+# Latest available
+npm view openclaw version
+```
+
+**Read HANDOFF.md first** — if the same version was already reported and user hasn't updated yet, don't report again.
+
+If a new version is available (not previously reported):
+- Note the version numbers (current vs available)
+- Run `npm view openclaw --json` to check what changed
+- Briefly assess: is it a critical security fix, a feature update, or minor?
+- Would it help with any known issues in our current setup?
+- Include in the report with a short summary
+- Write the reported version to HANDOFF.md so next run doesn't repeat
+
+If already up to date or already reported: skip silently.
+
+### 8. Generate Report
 
 Create a summary:
 
@@ -107,7 +131,7 @@ Create a summary:
 2. [Action item]
 ```
 
-### 8. Notify User
+### 9. Notify User
 
 If any issues found:
 - Send summary to user via communication channel
