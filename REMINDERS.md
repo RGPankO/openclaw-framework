@@ -139,6 +139,26 @@ Confirmation: "claimed" or "done" marks today complete
 Completion: After 7 days (2026-02-14)
 ```
 
+## Archiving Completed Reminders
+
+When a reminder is marked COMPLETED:
+1. Create `workspace/reminders/archive/` if it doesn't exist
+2. Move the file: `reminders/[name].md` → `reminders/archive/[name].md`
+3. This keeps the active directory clean and saves tokens (cron only scans active files)
+
+**Who archives:**
+- **Task agent (cron):** After marking a reminder COMPLETED, move it to archive immediately
+- **Main agent:** When user confirms a reminder in conversation ("done", "took them", etc.), mark COMPLETED and move to archive
+
+## Main Agent: Handling Confirmations
+
+When the user says they've completed something related to an active reminder:
+1. Read the reminder file
+2. Update status to COMPLETED
+3. Add final log entry
+4. Move to `reminders/archive/`
+5. Confirm to user: "Marked [reminder] as done"
+
 ## Important Rules
 
 1. **Main agent thinks, task agent executes** — All intelligence goes into file creation
@@ -146,3 +166,4 @@ Completion: After 7 days (2026-02-14)
 3. **Log everything** — Task agent logs all actions for debugging
 4. **Respect quiet hours** — Default: no reminders 1am-8am unless urgent
 5. **User can pause** — "Pause the pills reminder" → set status to PAUSED
+6. **Archive completed reminders** — Move to `reminders/archive/` immediately after completion

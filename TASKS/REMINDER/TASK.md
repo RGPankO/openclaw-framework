@@ -81,8 +81,16 @@ If confirmed:
 
 If a reminder's Completion Criteria is met:
 1. Set status to COMPLETED
-2. Move to archive (optional) or leave for user to clean up
-3. Log completion
+2. Add final log entry
+3. Create `workspace/reminders/archive/` if it doesn't exist
+4. Move the file to `workspace/reminders/archive/`
+
+```bash
+mkdir -p ~/.openclaw/workspace/reminders/archive
+mv ~/.openclaw/workspace/reminders/[filename].md ~/.openclaw/workspace/reminders/archive/
+```
+
+This is mandatory, not optional. Completed reminders must be archived to keep the active directory clean and save tokens on future runs.
 
 ### 5. Final Log
 
