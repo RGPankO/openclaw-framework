@@ -140,10 +140,11 @@ When a task cron fires:
 4. (Optional) Scan runs/ — If need more historical context
 5. If TASK.md specifies a Role — Read that role file
 6. Execute the task instructions
-7. Update HANDOFF.md — Current state for next run
-8. Write to runs/YYYY-MM-DD-HHMM.md — Session log
-9. Send summary if configured
-10. Exit — Don't start new work beyond the task scope
+7. Re-read HANDOFF.md — It may have been updated by another session since you last read it
+8. Update HANDOFF.md — Merge your changes with any new content, then write current state for next run
+9. Write to runs/YYYY-MM-DD-HHMM.md — Session log
+10. Send summary if configured
+11. Exit — Don't start new work beyond the task scope
 ```
 
 ## Cron Configuration
@@ -217,11 +218,12 @@ Built-in task templates in `framework/TASKS/`:
 1. **Standardized structure** — Always TASK.md, HANDOFF.md, runs/
 2. **No custom files at task level** — Use runs/ for history, HANDOFF.md for state
 3. **HANDOFF.md is dynamic** — Update every run, remove stale info
-4. **runs/ is append-only** — Never delete or modify past logs
-5. **Minimum config in cron** — The cron job just triggers; all instructions live in the .md file
-6. **Tasks read, don't write policy** — Task agents follow instructions, don't change framework files
-7. **One task, one purpose** — Don't combine multiple jobs into one task
-8. **Explicit instructions** — Task agents use simpler models; be very clear
-9. **Always log** — Every task execution should be logged to runs/
-10. **Templates stay in framework/** — Your actual tasks go in `workspace/TASKS/`
-11. **Version control your tasks** — They're part of your "self"
+4. **ALWAYS re-read HANDOFF.md before writing** — Another session (main or cron) may have edited it since you last read it. Re-read immediately before editing to avoid overwriting instructions or state left by others
+5. **runs/ is append-only** — Never delete or modify past logs
+6. **Minimum config in cron** — The cron job just triggers; all instructions live in the .md file
+7. **Tasks read, don't write policy** — Task agents follow instructions, don't change framework files
+8. **One task, one purpose** — Don't combine multiple jobs into one task
+9. **Explicit instructions** — Task agents use simpler models; be very clear
+10. **Always log** — Every task execution should be logged to runs/
+11. **Templates stay in framework/** — Your actual tasks go in `workspace/TASKS/`
+12. **Version control your tasks** — They're part of your "self"
