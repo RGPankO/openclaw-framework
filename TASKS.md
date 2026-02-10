@@ -17,22 +17,25 @@ workspace/TASKS/
 ├── MYPROJECT/                    # Task directory
 │   ├── TASK.md                 # Instructions (static)
 │   ├── HANDOFF.md              # Current state (dynamic, updated each run)
+│   ├── CONTEXT.md              # Long-term project facts (one-liners)
 │   └── runs/                   # Session history (append-only)
 │       ├── 2026-02-08-0800.md
 │       └── 2026-02-08-1400.md
 ├── REDDIT/
 │   ├── TASK.md
 │   ├── HANDOFF.md
+│   ├── CONTEXT.md
 │   └── runs/
 └── [CUSTOM]/
     ├── TASK.md
     ├── HANDOFF.md
+    ├── CONTEXT.md
     └── runs/
 ```
 
-**ALWAYS these 3 elements. No custom files at task level.**
+**ALWAYS these elements. No custom files at task level.**
 
-**Templates** are in `framework/TASKS/EXAMPLE/` — copy to `workspace/TASKS/[NAME]/` and customize.
+**Templates** are in `framework/TASKS/EXAMPLE/`. HANDOFF.md and CONTEXT.md templates are at `framework/TASKS/`. Copy to `workspace/TASKS/[NAME]/` and customize.
 
 ## The Three Elements
 
@@ -112,7 +115,29 @@ A living document updated every run. The agent reads it at start, updates it at 
 [Anything else useful for the next run]
 ```
 
-### 3. runs/ (Session History)
+### 3. CONTEXT.md (Long-Term Project Memory)
+
+Stable facts about the project that rarely change. One-liners only.
+
+**Key behaviors:**
+- **If empty or outdated — populate it** with what you know from the project
+- Add facts when you discover something lasting about the project
+- Keep entries as one-liners — no paragraphs
+- If you notice a contradiction (e.g. says SQLite but project uses PostgreSQL) — **investigate and update** the line, don't append a duplicate
+- Each fact should appear exactly once. When something changes, replace the old line.
+- This is NOT for session state — that's HANDOFF.md
+
+```markdown
+# Context
+
+- Uses PostgreSQL database
+- BTC payments via Breez SDK
+- Stripe setup for fiat payments
+- Deployed on Vercel
+- Main repo: github.com/org/project
+```
+
+### 4. runs/ (Session History)
 
 Append-only directory of session logs. Each run creates a new file.
 
@@ -137,7 +162,8 @@ When a task cron fires:
 1. Read TASKS/README.md — Learn execution rules
 2. Read TASKS/[NAME]/TASK.md — Specific instructions
 3. Read TASKS/[NAME]/HANDOFF.md — Current state from last run
-4. (Optional) Scan runs/ — If need more historical context
+4. Read TASKS/[NAME]/CONTEXT.md — Long-term project facts
+5. (Optional) Scan runs/ — If need more historical context
 5. If TASK.md specifies a Role — Read that role file
 6. Execute the task instructions
 7. Re-read HANDOFF.md — It may have been updated by another session since you last read it
@@ -178,9 +204,10 @@ Benefits:
 **Main agent creates tasks** when user asks for recurring automation:
 
 1. Create directory: `workspace/TASKS/[NAME]/`
-2. Create `TASK.md` with instructions
-3. Create empty `HANDOFF.md` (first run will populate)
-4. Create `runs/` directory
+2. Create `TASK.md` with instructions (copy from `framework/TASKS/EXAMPLE/TASK.md`)
+3. Copy `framework/TASKS/HANDOFF.md` as `HANDOFF.md` (first run will populate)
+4. Copy `framework/TASKS/CONTEXT.md` as `CONTEXT.md` (populate with known project facts)
+5. Create `runs/` directory
 5. Create corresponding role in `workspace/ROLES/` if needed
 6. Set up cron job with minimal prompt
 7. Confirm to user: "Created task [NAME], runs [schedule]"
@@ -202,10 +229,11 @@ Users can manage tasks via:
 
 ## Task Templates
 
-Copy from `framework/TASKS/EXAMPLE/` to get started:
-- `TASK.md` — Template with all sections
-- `HANDOFF.md` — Empty starting template
-- `runs/` — Directory for session logs
+Copy from `framework/TASKS/` to get started:
+- `EXAMPLE/TASK.md` — Template with all sections
+- `HANDOFF.md` — Starting template (shared, at TASKS/ level)
+- `CONTEXT.md` — Project facts template (shared, at TASKS/ level)
+- Create `runs/` directory in your new task
 
 Built-in task templates in `framework/TASKS/`:
 - `SELF-MAINTAIN.md` — Daily health check
@@ -215,10 +243,10 @@ Built-in task templates in `framework/TASKS/`:
 
 ## Important Rules
 
-1. **Standardized structure** — Always TASK.md, HANDOFF.md, runs/
+1. **Standardized structure** — Always TASK.md, HANDOFF.md, CONTEXT.md, runs/
 2. **No custom files at task level** — Use runs/ for history, HANDOFF.md for state
-3. **HANDOFF.md is dynamic** — Update every run, remove stale info
-4. **ALWAYS re-read HANDOFF.md before writing** — Another session (main or cron) may have edited it since you last read it. Re-read immediately before editing to avoid overwriting instructions or state left by others
+3. **HANDOFF.md is dynamic** — Every session is expected to **add** content (findings, important notes, advice for the next run) AND **remove** content (previous handover notes that were specific to that run and no longer useful). It's a living document, not an append-only log. Keep under 400 lines max. If it grows beyond that, prune aggressively and move historical detail to `runs/`.
+4. **ALWAYS re-read HANDOFF.md before writing** — Another session (main or cron) may have edited it since you last read it. Re-read immediately before editing to avoid overwriting instructions or state left by others.
 5. **runs/ is append-only** — Never delete or modify past logs
 6. **Minimum config in cron** — The cron job just triggers; all instructions live in the .md file
 7. **Tasks read, don't write policy** — Task agents follow instructions, don't change framework files

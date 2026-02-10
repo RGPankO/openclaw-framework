@@ -9,6 +9,7 @@ Every task has:
 TASKS/[NAME]/
 ├── TASK.md      # What to do (specific instructions)
 ├── HANDOFF.md   # Current state (read first, update at end)
+├── CONTEXT.md   # Long-term project facts (one-liners)
 └── runs/        # Session history (append-only logs)
 ```
 
@@ -19,7 +20,8 @@ The cron tells you: "Read README.md, then read TASK.md"
 After reading TASK.md, before doing the work:
 
 1. **Read `HANDOFF.md`** — Understand current state, what happened last time, advice from previous run
-2. **Optionally scan `runs/`** — If you need more historical context, check recent session logs
+2. **Read `CONTEXT.md`** — Long-term project facts
+3. **Optionally scan `runs/`** — If you need more historical context, check recent session logs
 3. **If task specifies a Role** — Read the role file mentioned in TASK.md
 
 Then execute the task instructions.
@@ -83,7 +85,7 @@ Filename: `YYYY-MM-DD-HHMM.md`
 
 ## Important Rules
 
-1. **HANDOFF.md is dynamic** — Update every run, remove stale info
+1. **HANDOFF.md is dynamic** — Every run: **add** findings, notes, and advice for the next session; **remove** items that were specific to the previous handover and no longer useful
 2. **runs/ is append-only** — Never delete or modify past logs
 3. **Be explicit** — Task agents may use simpler models; leave clear context
 4. **Don't exceed scope** — Do the task, don't start unrelated work
