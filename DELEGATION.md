@@ -102,9 +102,18 @@ Why:
 - Can run in background
 - Reports back when done
 
+**Critical: Always instruct the coding agent to read the coding principles first.** Include this in every coding delegation:
+
+> Before coding, read these files and follow them strictly:
+> - `framework/docs/CODE_PRINCIPLES.md`
+> - `framework/docs/FILE_PRINCIPLES.md`
+> - `framework/docs/COMMIT_GUIDELINES.md`
+
+The coding agent doesn't inherit your context. Without this, it codes with its own defaults.
+
 **Pattern:**
 ```bash
-bash pty:true workdir:[path] background:true command:"codex --yolo exec '[task]. When done: openclaw system event --text \"Done: [summary]\" --mode now'"
+bash pty:true workdir:[path] background:true command:"codex --yolo exec 'Read framework/docs/CODE_PRINCIPLES.md, framework/docs/FILE_PRINCIPLES.md, and framework/docs/COMMIT_GUIDELINES.md first. Then: [task]. When done: openclaw system event --text \"Done: [summary]\" --mode now'"
 ```
 
 **Fallback (if Codex unavailable):**
