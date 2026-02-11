@@ -180,12 +180,12 @@ Default role for direct communication with [user's name].
 
 ### Step 11: Set Up Default Tasks (If Enabled)
 
-Copy task directories and **create crons with these exact payloads**:
+**Built-in tasks read instructions from `framework/TASKS/` directly.** Only instance state (HANDOFF.md, CONTEXT.md, runs/) lives in `workspace/TASKS/`. Do NOT copy TASK.md files — they stay in framework and update automatically with `git pull`.
 
-Each task is a directory with: `TASK.md`, `HANDOFF.md`, `runs/`
+For each enabled task, create the instance state directory and cron:
 
 **Self-Maintain (if enabled):**
-1. Copy `framework/TASKS/SELF-MAINTAIN/` to `workspace/TASKS/SELF-MAINTAIN/`
+1. Create `workspace/TASKS/SELF-MAINTAIN/` with: `HANDOFF.md`, `CONTEXT.md`, `runs/`
 2. Create cron using:
 ```
 cron action=add job={
@@ -195,14 +195,14 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read TASKS/README.md for execution rules. Then read TASKS/SELF-MAINTAIN/TASK.md and follow instructions."
+    "message": "Read framework/TASKS/README.md for execution rules. Then read framework/TASKS/SELF-MAINTAIN/TASK.md and follow instructions. Instance state is in TASKS/SELF-MAINTAIN/ (HANDOFF.md, CONTEXT.md, runs/)."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
 ```
 
 **Auto-Update (if enabled):**
-1. Copy `framework/TASKS/AUTO-UPDATE/` to `workspace/TASKS/AUTO-UPDATE/`
+1. Create `workspace/TASKS/AUTO-UPDATE/` with: `HANDOFF.md`, `CONTEXT.md`, `runs/`
 2. Create cron using:
 ```
 cron action=add job={
@@ -212,14 +212,14 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read TASKS/README.md for execution rules. Then read TASKS/AUTO-UPDATE/TASK.md and follow instructions."
+    "message": "Read framework/TASKS/README.md for execution rules. Then read framework/TASKS/AUTO-UPDATE/TASK.md and follow instructions. Instance state is in TASKS/AUTO-UPDATE/ (HANDOFF.md, CONTEXT.md, runs/)."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
 ```
 
 **Reminder (if enabled):**
-1. Copy `framework/TASKS/REMINDER/` to `workspace/TASKS/REMINDER/`
+1. Create `workspace/TASKS/REMINDER/` with: `HANDOFF.md`, `CONTEXT.md`, `runs/`
 2. Create cron using:
 ```
 cron action=add job={
@@ -229,14 +229,14 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read TASKS/README.md for execution rules. Then read TASKS/REMINDER/TASK.md and follow instructions."
+    "message": "Read framework/TASKS/README.md for execution rules. Then read framework/TASKS/REMINDER/TASK.md and follow instructions. Instance state is in TASKS/REMINDER/ (HANDOFF.md, CONTEXT.md, runs/)."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }
 ```
 
 **TODO Processor (if todo_system enabled):**
-1. Copy `framework/TASKS/TODO-PROCESSOR/` to `workspace/TASKS/TODO-PROCESSOR/`
+1. Create `workspace/TASKS/TODO-PROCESSOR/` with: `HANDOFF.md`, `CONTEXT.md`, `runs/`
 2. Create cron using:
 ```
 cron action=add job={
@@ -246,7 +246,7 @@ cron action=add job={
   "enabled": true,
   "payload": {
     "kind": "agentTurn",
-    "message": "Read TASKS/README.md for execution rules. Then read TASKS/TODO-PROCESSOR/TASK.md and follow instructions."
+    "message": "Read framework/TASKS/README.md for execution rules. Then read framework/TASKS/TODO-PROCESSOR/TASK.md and follow instructions. Instance state is in TASKS/TODO-PROCESSOR/ (HANDOFF.md, CONTEXT.md, runs/)."
   },
   "delivery": {"mode": "announce", "bestEffort": true}
 }

@@ -27,6 +27,7 @@ reminders: true             # Smart reminder system
 
 # Automation
 auto_update: true           # Daily check for framework updates
+auto_update_style: default  # default = ask before pulling, brief = auto-pull + brief summary, auto-apply = auto-pull silently
 self_maintain: true         # Daily health check task
 
 # Guidelines

@@ -10,32 +10,32 @@ Internally, these are OpenClaw cron jobs. The framework just provides a user-fri
 
 ## Directory Structure
 
-Each task gets its own directory with a standardized structure:
+**Built-in tasks** (Self-Maintain, Auto-Update, Reminder, TODO Processor) read TASK.md directly from `framework/TASKS/`. Only instance state lives in `workspace/TASKS/`:
 
 ```
 workspace/TASKS/
-├── MYPROJECT/                    # Task directory
-│   ├── TASK.md                 # Instructions (static)
+├── SELF-MAINTAIN/              # Built-in task (TASK.md lives in framework/)
 │   ├── HANDOFF.md              # Current state (dynamic, updated each run)
 │   ├── CONTEXT.md              # Long-term project facts (one-liners)
 │   └── runs/                   # Session history (append-only)
 │       ├── 2026-02-08-0800.md
 │       └── 2026-02-08-1400.md
-├── REDDIT/
-│   ├── TASK.md
+```
+
+**Custom/project tasks** have their own TASK.md alongside their state:
+
+```
+workspace/projects/[name]/TASKS/
+├── BUILD/
+│   ├── TASK.md                 # Instructions (project-specific, static)
 │   ├── HANDOFF.md
 │   ├── CONTEXT.md
 │   └── runs/
-└── [CUSTOM]/
-    ├── TASK.md
-    ├── HANDOFF.md
-    ├── CONTEXT.md
-    └── runs/
 ```
 
-**ALWAYS these elements. No custom files at task level.**
+**Why:** Built-in TASK.md files update with `git pull` on the framework. No stale copies to maintain. Custom tasks have project-specific instructions that don't come from framework.
 
-**Templates** are in `framework/TASKS/EXAMPLE/`. HANDOFF.md and CONTEXT.md templates are at `framework/TASKS/`. Copy to your task directory and customize.
+**Templates** are in `framework/TASKS/EXAMPLE/`. HANDOFF.md and CONTEXT.md templates are at `framework/TASKS/`.
 
 ## Task Location: Instance vs Project
 
@@ -182,18 +182,18 @@ Append-only directory of session logs. Each run creates a new file.
 When a task cron fires:
 
 ```
-1. Read TASKS/README.md — Learn execution rules
-2. Read TASKS/[NAME]/TASK.md — Specific instructions
-3. Read TASKS/[NAME]/HANDOFF.md — Current state from last run
-4. Read TASKS/[NAME]/CONTEXT.md — Long-term project facts
+1. Read framework/TASKS/README.md — Learn execution rules
+2. Read TASK.md — From framework/ (built-in) or project (custom)
+3. Read HANDOFF.md — Current state from last run (always in instance/project dir)
+4. Read CONTEXT.md — Long-term project facts (always in instance/project dir)
 5. (Optional) Scan runs/ — If need more historical context
-5. If TASK.md specifies a Role — Read that role file
-6. Execute the task instructions
-7. Re-read HANDOFF.md — It may have been updated by another session since you last read it
-8. Update HANDOFF.md — Merge your changes with any new content, then write current state for next run
-9. Write to runs/YYYY-MM-DD-HHMM.md — Session log
-10. Send summary if configured
-11. Exit — Don't start new work beyond the task scope
+6. If TASK.md specifies a Role — Read that role file
+7. Execute the task instructions
+8. Re-read HANDOFF.md — It may have been updated by another session since you last read it
+9. Update HANDOFF.md — Merge your changes with any new content, then write current state for next run
+10. Write to runs/YYYY-MM-DD-HHMM.md — Session log
+11. Send summary if configured
+12. Exit — Don't start new work beyond the task scope
 ```
 
 ## Cron Configuration
@@ -201,14 +201,17 @@ When a task cron fires:
 **Keep cron prompts minimal.** All instructions live in files:
 
 ```
-# [TASK NAME]
+# Built-in task
+Read framework/TASKS/README.md for execution rules. Then read framework/TASKS/[NAME]/TASK.md and follow instructions. Instance state is in TASKS/[NAME]/ (HANDOFF.md, CONTEXT.md, runs/).
 
-Read TASKS/README.md for execution rules. Then read TASKS/[NAME]/TASK.md and follow instructions.
+# Project task
+Read framework/TASKS/README.md for execution rules. Then read projects/[name]/TASKS/[NAME]/TASK.md and follow instructions.
 ```
 
-**The two files:**
-- `TASKS/README.md` — Generic execution rules (read HANDOFF, write to runs/, etc.)
-- `TASKS/[NAME]/TASK.md` — Specific task instructions
+**The key files:**
+- `framework/TASKS/README.md` — Generic execution rules (read HANDOFF, write to runs/, etc.)
+- `framework/TASKS/[NAME]/TASK.md` — Instructions for built-in tasks (updated via git pull)
+- `projects/[name]/TASKS/[NAME]/TASK.md` — Instructions for project-specific tasks
 
 Benefits:
 - Edit instructions without touching cron config
@@ -218,22 +221,22 @@ Benefits:
 
 ## Setup
 
-1. Copy task template from `framework/TASKS/EXAMPLE/` to `workspace/TASKS/[NAME]/`
-2. Customize TASK.md for your needs
-3. Set up the corresponding cron job in OpenClaw with minimal prompt
+**Built-in tasks:** Create only the instance state directory (`workspace/TASKS/[NAME]/` with HANDOFF.md, CONTEXT.md, runs/). TASK.md stays in framework/.
 
-## Creating Tasks
+**Custom tasks:** Create the full directory in `workspace/TASKS/[NAME]/` or `projects/[name]/TASKS/[NAME]/` with your own TASK.md.
+
+## Creating Custom Tasks
 
 **Main agent creates tasks** when user asks for recurring automation:
 
-1. Create directory: `workspace/TASKS/[NAME]/`
-2. Create `TASK.md` with instructions (copy from `framework/TASKS/EXAMPLE/TASK.md`)
+1. Create directory: `projects/[name]/TASKS/[NAME]/` (project task) or `workspace/TASKS/[NAME]/` (instance task)
+2. Create `TASK.md` with instructions (use `framework/TASKS/EXAMPLE/TASK.md` as reference)
 3. Copy `framework/TASKS/HANDOFF.md` as `HANDOFF.md` (first run will populate)
 4. Copy `framework/TASKS/CONTEXT.md` as `CONTEXT.md` (populate with known project facts)
 5. Create `runs/` directory
-5. Create corresponding role in `workspace/ROLES/` if needed
-6. Set up cron job with minimal prompt
-7. Confirm to user: "Created task [NAME], runs [schedule]"
+6. Create corresponding role in `workspace/ROLES/` if needed
+7. Set up cron job with minimal prompt
+8. Confirm to user: "Created task [NAME], runs [schedule]"
 
 ## Managing Tasks
 

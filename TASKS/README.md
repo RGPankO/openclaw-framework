@@ -4,13 +4,13 @@
 
 ## Directory Structure
 
-Every task has:
+Every task has instance state (HANDOFF.md, CONTEXT.md, runs/) in its directory. TASK.md is either in `framework/TASKS/` (built-in tasks) or in the project/instance directory (custom tasks). The cron prompt tells you where to find TASK.md.
+
 ```
-TASKS/[NAME]/
-├── TASK.md      # What to do (specific instructions)
-├── HANDOFF.md   # Current state (read first, update at end)
-├── CONTEXT.md   # Long-term project facts (one-liners)
-└── runs/        # Session history (append-only logs)
+# Instance state (always here):
+HANDOFF.md   # Current state (read first, update at end)
+CONTEXT.md   # Long-term project facts (one-liners)
+runs/        # Session history (append-only logs)
 ```
 
 ## Execution Order
@@ -29,10 +29,11 @@ Then execute the task instructions.
 ## After Completing
 
 1. **Update `HANDOFF.md`** with:
-   - What you did this session
-   - Current state
-   - Advice for next run
-   - Remove stale/outdated information — keep it fresh
+   - Current state and advice for next run
+   - **REMOVE completed tasks entirely** — done = delete the line, don't strikethrough or mark ✅
+   - **Don't document fixes** — if it was broken and you fixed it, delete the bug. Update CONTEXT.md if the fix changed how something works permanently.
+   - **Move lasting knowledge to CONTEXT.md or library/** — then remove from handoff
+   - Everything in handoff must be actionable for the next agent
 
 2. **Write session log** to `runs/YYYY-MM-DD-HHMM.md`:
    - Detailed log of actions taken
@@ -56,19 +57,16 @@ Then execute the task instructions.
 # Handoff
 
 ## Current State
-[Where things stand right now]
+[Where things stand right now — what works, what's active]
 
 ## Last Session
-[What was just done, when]
+[What was just done — overwrite this section each run, never accumulate]
 
 ## Next Steps
-[What should happen next]
+[What should happen next — prioritized, actionable]
 
 ## Watch Out For
 [Gotchas, blockers, things to remember]
-
-## Notes
-[Anything else useful]
 ```
 
 ## Session Log Format (runs/)
@@ -93,7 +91,7 @@ Filename: `YYYY-MM-DD-HHMM.md`
 
 ## Important Rules
 
-1. **HANDOFF.md is dynamic** — Every run: **add** findings, notes, and advice for the next session; **remove** items that were specific to the previous handover and no longer useful
+1. **HANDOFF.md is forward-looking only** — Remove completed tasks (done = gone), don't document fixes, move lasting knowledge to CONTEXT.md. Everything must be actionable.
 2. **runs/ is append-only** — Never delete or modify past logs
 3. **Be explicit** — Task agents may use simpler models; leave clear context
 4. **Don't exceed scope** — Do the task, don't start unrelated work

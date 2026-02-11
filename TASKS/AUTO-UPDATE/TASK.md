@@ -103,15 +103,15 @@ Create update notification:
 Reply "update framework" to apply, or "skip update" to defer.
 ```
 
-### 7. Notify User
+### 7. Apply or Notify
 
-Send the report via communication channel.
+**Check `auto_update_style` in USER-SETTINGS.md:**
 
-Wait for user response before proceeding.
+- **If `auto_update_style: auto-apply`** — Pull immediately without asking. User trusts auto-updates.
+- **If `auto_update_style: brief`** — Pull immediately, notify user after with a brief summary.
+- **Otherwise (default)** — Send the report and wait for user confirmation before pulling.
 
-### 8. If User Confirms Update
-
-**Only NOW do we pull** — this is when files actually change:
+### 8. Pull Update (when approved or auto-applying)
 
 ```bash
 cd ~/.openclaw/workspace/framework
@@ -138,8 +138,8 @@ Log to: `memory/YYYY-MM-DD.md`
 
 - Update check completed
 - User notified of available updates (if any)
-- No automatic updates without user confirmation
-- Update applied cleanly if confirmed
+- Updates applied per `auto_update_style` setting
+- Update applied cleanly
 
 ## Error Handling
 
