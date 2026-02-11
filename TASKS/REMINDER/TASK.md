@@ -37,7 +37,11 @@ List files in `workspace/reminders/`:
 ls ~/.openclaw/workspace/reminders/*.md
 ```
 
-If no files → Log "No active reminders" and exit.
+If no `.md` files (excluding archive/) → No active reminders. Disable the Reminder cron to save tokens:
+
+1. Use the cron tool to disable this job: `cron action=update jobId=[reminder-cron-id] patch={"enabled": false}`
+2. Update HANDOFF.md: "Disabled cron — no active reminders. Main agent will re-enable when new reminders are created."
+3. Reply HEARTBEAT_OK and exit.
 
 ### 3. Process Each Reminder
 

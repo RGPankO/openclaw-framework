@@ -159,6 +159,20 @@ When the user says they've completed something related to an active reminder:
 4. Move to `reminders/archive/`
 5. Confirm to user: "Marked [reminder] as done"
 
+## Main Agent: Creating New Reminders
+
+When creating a new reminder:
+1. Write the reminder file to `workspace/reminders/`
+2. Check if the Reminder cron is enabled — if not, re-enable it
+3. Tell the user the plan
+
+## Cron Self-Disable
+
+When the reminder cron finds no active reminders (no .md files in `reminders/`, excluding `archive/`):
+1. It disables itself to save tokens
+2. Logs this in HANDOFF.md
+3. The main agent re-enables the cron when a new reminder is created
+
 ## Important Rules
 
 1. **Main agent thinks, task agent executes** — All intelligence goes into file creation
