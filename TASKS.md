@@ -113,7 +113,11 @@ Example: `workspace/ROLES/[NAME].md`
 A living document updated every run. The agent reads it at start, updates it at end.
 
 **Key behaviors:**
-- Remove stale/outdated information
+- **REMOVE completed tasks entirely.** Done = gone. Don't strikethrough, don't mark ✅ — delete the line. Handoff is only what's ahead, never what's behind.
+- **Don't document fixes.** If something was broken and you fixed it, nobody cares. Delete the bug from handoff. Update CONTEXT.md if the fix changed how something works permanently.
+- **Move lasting knowledge to CONTEXT.md or library/.** If you built something new or discovered a permanent fact, add a one-liner to CONTEXT.md. If it's deeper knowledge, update library/ files. Then remove it from handoff.
+- **Everything in handoff must be actionable.** If the next agent can't act on it, it doesn't belong here.
+- Remove stale/outdated information every run
 - Add fresh context and current state
 - Write as if advising the next agent: "Continue from X, be aware of Y"
 - Keep it concise but useful
@@ -122,19 +126,16 @@ A living document updated every run. The agent reads it at start, updates it at 
 # Handoff
 
 ## Current State
-[Where things stand right now]
+[Where things stand right now — what works, what's active]
 
 ## Last Session
-[What was just done, when]
+[What was just done — overwrite this section each run, never accumulate]
 
 ## Next Steps
-[What should happen next]
+[What should happen next — prioritized, actionable]
 
 ## Watch Out For
 [Gotchas, blockers, things to remember]
-
-## Notes
-[Anything else useful for the next run]
 ```
 
 ### 3. CONTEXT.md (Long-Term Project Memory)
