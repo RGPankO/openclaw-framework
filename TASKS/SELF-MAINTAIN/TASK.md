@@ -102,7 +102,21 @@ If a new version is available (not previously reported):
 
 If already up to date or already reported: skip silently.
 
-### 8. Generate Report
+### 8. Instance Version Control
+
+If the workspace has a git repo initialized (instance backup):
+
+1. Run `git status` to see what changed since last commit
+2. Review the changes — if new untracked files appear that shouldn't be committed, update `.gitignore`
+3. Stage files that belong in the instance repo (memory, tasks, context, settings, etc.)
+4. Commit with a descriptive message summarizing what changed
+5. Push if remote is configured
+
+**Scope: instance repo only.** Do not touch project repos or identity repos — those are managed separately by their respective tasks or manually.
+
+If no git repo is initialized, skip this step silently.
+
+### 9. Generate Report
 
 Create a summary:
 
@@ -131,7 +145,7 @@ Create a summary:
 2. [Action item]
 ```
 
-### 9. Notify User
+### 10. Notify User
 
 If any issues found:
 - Send summary to user via communication channel

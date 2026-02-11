@@ -40,7 +40,15 @@ Then execute the task instructions.
    - Decisions made and why
    - Same as your summary + technical details
 
-3. **Send summary** if delivery is configured
+3. **Update `CONTEXT.md`** — Add any new lasting project facts discovered. If something changed (e.g. migrated database), update the existing line — don't duplicate.
+
+4. **Commit project repo** (if task is inside a project):
+   - Run `git status` in the project directory
+   - Review changes — update `.gitignore` if needed
+   - Stage and commit with a descriptive message (see `framework/PROJECTS.md` for branch workflow)
+   - Push if remote is configured
+
+5. **Send summary** if delivery is configured
 
 ## HANDOFF.md Format
 

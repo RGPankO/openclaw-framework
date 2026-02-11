@@ -49,18 +49,26 @@ OpenClaw auto-injects SOUL.md, IDENTITY.md, USER.md, AGENTS.md into the system p
 **Framework files** (read-only, updated via git):
 - `workspace/framework/*` — Templates, instructions, task definitions
 
-**User's self files** (editable, user's own git repo):
-- `workspace/SOUL.md`, `IDENTITY.md`, `AGENTS.md` — Personality
-- `workspace/MISSION.md` — Purpose
-- `workspace/USER-SETTINGS.md` — Framework preferences
-- `workspace/FRAMEWORK-OVERRIDES.md` — Custom overrides (optional)
-- `workspace/ROLES/` — Role definitions
-- `workspace/TASKS/` — Task instructions
+**Identity files** (shared across instances, identity repo):
+- `workspace/SOUL.md`, `IDENTITY.md`, `USER.md` — Who the agent is
 
-**Instance files** (never committed):
-- `workspace/MEMORY.md`, `memory/` — Per-instance memory
+**Instance files** (this deployment's state, instance repo):
+- `workspace/AGENTS.md`, `MISSION.md`, `ACTIVE-CONTEXT.md` — Instance config
+- `workspace/USER-SETTINGS.md`, `FRAMEWORK-OVERRIDES.md` — Preferences
+- `workspace/MEMORY.md`, `memory/` — Instance memory (portable)
+- `workspace/ROLES/`, `TASKS/` — Instance-level roles and tasks
+- `workspace/TOOLS.md`, `reminders/`, `todo/` — Instance state
+
+**Never committed:**
 - `workspace/CREDENTIALS.md` — Secrets
-- `workspace/todo/`, `reminders/` — Ephemeral
+
+**Project files** (one repo per project):
+- `workspace/projects/[name]/` — Code, library, project-specific tasks
+
+**Coding docs** (referenced by Engineer role and coding delegation):
+- `framework/docs/CODE_PRINCIPLES.md`, `FILE_PRINCIPLES.md`, `COMMIT_GUIDELINES.md`
+
+See `framework/SELF-VERSIONING.md` for the full version control structure.
 
 ## Your Settings
 
@@ -91,8 +99,8 @@ projects/[name]/
 - **project/** — The actual work (code repo, research docs, marketing assets, etc.)
 - **library/** — Accumulated knowledge about the project (local only, 4 standardized files)
 - **Git repos are PRIVATE by default** — never create public without user approval
-- **Feature branch workflow** — never push directly to main/master
-- **Merge only after user confirms** — "looks good" / "merge it" required
+- **Default to main** for prototyping; use feature branches when project is live or user requests it
+- **Merge only after user confirms** when on feature branches
 - **Details:** `framework/PROJECTS.md`
 
 ### TODOs (`workspace/todo/`)

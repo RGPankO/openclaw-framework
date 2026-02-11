@@ -35,7 +35,29 @@ workspace/TASKS/
 
 **ALWAYS these elements. No custom files at task level.**
 
-**Templates** are in `framework/TASKS/EXAMPLE/`. HANDOFF.md and CONTEXT.md templates are at `framework/TASKS/`. Copy to `workspace/TASKS/[NAME]/` and customize.
+**Templates** are in `framework/TASKS/EXAMPLE/`. HANDOFF.md and CONTEXT.md templates are at `framework/TASKS/`. Copy to your task directory and customize.
+
+## Task Location: Instance vs Project
+
+Tasks can live in two places depending on what they're about:
+
+### Instance tasks — `workspace/TASKS/`
+Tasks about maintaining the instance itself. Not tied to any project.
+- Self-Maintain, Auto-Update, Reminders, TODO Processor
+- These stay with the instance repo (see `SELF-VERSIONING.md`)
+
+### Project tasks — `workspace/projects/[name]/TASKS/`
+Tasks about building, reviewing, or maintaining a specific project.
+- Build tasks, code reviews, project-specific research
+- These live inside the project directory and are version-controlled with the project
+- When another instance clones the project, it gets the full task history (handoffs, runs, context)
+
+**Rule:** If the task is about a project, it goes with the project. If it's about the instance, it stays at workspace level.
+
+**Cron prompts for project tasks** point to the project path:
+```
+Read TASKS/README.md for execution rules. Then read projects/[name]/TASKS/[TASK-NAME]/TASK.md and follow instructions.
+```
 
 ## The Three Elements
 

@@ -12,27 +12,69 @@ Each project has a standardized structure:
 
 ```
 workspace/projects/
-├── my-app/
-│   ├── project/                # The actual work (git repo, research docs, etc.)
-│   └── library/                # Agent's knowledge (local only)
-│       ├── research.md
-│       ├── decisions.md
-│       ├── plans.md
-│       └── notes.md
-├── another-project/
-│   ├── project/
-│   └── library/
-├── client-work/                # Subdirectory for organization
-│   ├── project-a/
-│   │   ├── project/
-│   │   └── library/
-│   └── project-b/
-│       ├── project/
-│       └── library/
-└── experiments/                # Quick experiments
+├── my-saas/                    # Code repo is separate
+│   ├── project/                # Actual code (its own git repo, CI/CD, deployable)
+│   ├── library/                # Agent's knowledge about the project
+│   │   ├── research.md
+│   │   ├── decisions.md
+│   │   ├── plans.md
+│   │   └── notes.md
+│   └── TASKS/                  # Project-specific tasks
+│       └── BUILD/
+├── my-landing-page/            # Code lives with knowledge (single repo)
+│   ├── project/                # Simple site, no separate CI needed
+│   ├── library/
+│   └── TASKS/
+└── market-research/            # Non-code project
+    ├── project/                # Research docs
+    ├── library/
+    └── TASKS/
 ```
 
-## The Two Elements
+## Version Control: Separate Code or Combined?
+
+A project's `project/` directory (the actual code/website) can be version-controlled two ways:
+
+### Option A: Separate code repo (recommended for apps)
+
+`project/` is its own git repo — cloned, pushed, and deployed independently. A developer with no knowledge of OpenClaw can clone it and work on it. Suitable for CI/CD pipelines.
+
+The project knowledge repo (library/, TASKS/) gitignores `project/`:
+
+```gitignore
+# project/ is its own repo
+project/
+```
+
+**Use when:**
+- Project has a build/deploy pipeline
+- Code should be shareable with non-OpenClaw developers
+- Project has its own package.json, Dockerfile, tests, etc.
+- Multiple people or agents may work on the code
+
+### Option B: Combined repo (simpler)
+
+Everything — code, library, tasks — lives in one repo. Simpler setup, less overhead.
+
+**Use when:**
+- Simple project (static site, scripts, research)
+- No CI/CD pipeline needed
+- Solo agent, no external collaborators
+- Prototyping / early stage
+
+### How to decide
+
+When creating a project, ask the user: *"Should the code be its own repo (for CI/CD, external collaboration) or keep everything together?"*
+
+If the user doesn't have a preference, decide based on the project:
+- Has package.json, Dockerfile, or deploy config → **separate**
+- Static site, research, or simple scripts → **combined**
+
+Record the decision in `library/decisions.md`.
+
+---
+
+## The Three Elements
 
 ### 1. project/ (The Work)
 
@@ -43,21 +85,27 @@ The actual project content. Could be:
 - **Any work type:** Whatever the project needs
 
 ```bash
-# Clone a repo into project/
+# Separate code repo — clone into project/
 cd ~/.openclaw/workspace/projects/[name]
 git clone <url> project
 
 # Or init new code project
 mkdir -p project && cd project && git init
 
-# Or create research project
+# Combined — just create files
 mkdir -p project && cd project
 touch overview.md findings.md conclusions.md
 ```
 
-### 2. library/ (Agent's Knowledge)
+### 2. TASKS/ (Project-Specific Tasks)
 
-Accumulated knowledge about the project. **Local only** — not pushed to GitHub.
+Tasks that are about this project — build tasks, code reviews, research sprints. Follows the same structure as workspace-level tasks (TASK.md, HANDOFF.md, CONTEXT.md, runs/). See `framework/TASKS.md` for details.
+
+These travel with the project — when another instance clones the project, it gets the full task history.
+
+### 3. library/ (Agent's Knowledge)
+
+Accumulated knowledge about the project.
 
 Contains 4 standardized files:
 
@@ -81,24 +129,29 @@ Contains 4 standardized files:
 
 ## Connecting Tasks to Projects
 
-A task that works on a project references it in TASK.md:
+Project tasks live inside the project directory:
+
+```
+projects/myproject/TASKS/BUILD/TASK.md
+```
+
+The TASK.md references paths relative to the project:
 
 ```markdown
-# Project Dev Task
-
 ## Project Location
-- **Project:** `projects/[name]/project/`
-- **Library:** `projects/[name]/library/`
+- **Code:** `projects/myproject/project/`
+- **Library:** `projects/myproject/library/`
+```
 
-## Before Starting
-1. Read HANDOFF.md
-2. Check library/ for project context
-...
+Cron prompts point to the project path:
+```
+Read TASKS/README.md for execution rules. Then read projects/myproject/TASKS/BUILD/TASK.md and follow instructions.
 ```
 
 The flow:
-- **TASKS/[NAME]/HANDOFF.md** — Session-to-session state (what's happening now)
-- **projects/[name]/library/** — Long-term knowledge (what we know about this project)
+- **TASKS/BUILD/HANDOFF.md** — Session-to-session state (what's happening now)
+- **TASKS/BUILD/CONTEXT.md** — Lasting project facts (one-liners)
+- **library/** — Deep knowledge (research, decisions, plans, notes)
 
 ---
 
@@ -117,20 +170,16 @@ gh repo create [name] --private
 
 If user wants a public repo, they must explicitly say so.
 
-### Feature Branch Workflow
+### Git Workflow
 
-**Never work directly on main/master.** All work happens on feature branches.
+**Default: work on main.** For prototyping, solo projects, and early-stage work, committing directly to main is fine. Keep it simple.
 
-```
-main/master (protected)
-    │
-    ├── feature/add-login
-    ├── feature/fix-bug-123
-    ├── feature/update-docs
-    └── ...
-```
+**Switch to feature branches when:**
+- The project is live/in production and a bad push breaks things
+- Multiple agents or people work on the same repo
+- User explicitly asks for branch-based workflow
 
-### Branch Naming
+### Feature Branch Workflow (When Applicable)
 
 ```
 feature/[short-description]    # New features
@@ -138,19 +187,11 @@ fix/[short-description]        # Bug fixes
 chore/[short-description]      # Maintenance, deps, cleanup
 ```
 
-Examples:
-- `feature/add-dark-mode`
-- `fix/login-crash`
-- `chore/update-dependencies`
-
-### The Workflow
-
 ```
 1. Create feature branch
    git checkout -b feature/my-feature
 
-2. Do the work
-   (commits on feature branch)
+2. Do the work (commits on feature branch)
 
 3. Push feature branch
    git push -u origin feature/my-feature
@@ -159,81 +200,82 @@ Examples:
    "Feature complete on branch `feature/my-feature`. Ready to merge when you approve."
 
 5. WAIT for user confirmation
-   User says "looks good" / "merge it" / "approved"
 
 6. ONLY THEN merge to main
-   git checkout main
-   git merge feature/my-feature
-   git push origin main
+   git checkout main && git merge feature/my-feature && git push
 
-7. Clean up
+7. Clean up branch
    git branch -d feature/my-feature
    git push origin --delete feature/my-feature
 ```
 
-### ⚠️ NEVER Do This
+### Rules
 
-❌ Push directly to main/master
-❌ Merge without user approval
 ❌ Force push to main
+❌ Merge without user approval (when on feature branches)
 ❌ Create public repos without explicit permission
 
-### ✅ Always Do This
-
-✅ Work on feature branches
-✅ Push feature branch for review
-✅ Wait for user's "merge it" / "looks good" / explicit approval
-✅ Then merge to main
 ✅ Keep repos private unless told otherwise
-
-### Quick Commands
-
-```bash
-# Start new feature
-git checkout main
-git pull
-git checkout -b feature/my-feature
-
-# Save progress
-git add -A
-git commit -m "feat: description"
-git push -u origin feature/my-feature
-
-# After user approves
-git checkout main
-git merge feature/my-feature
-git push origin main
-```
+✅ When using feature branches, wait for user's explicit approval before merging
 
 ---
 
 ## Creating a New Project
 
+### 1. Create structure
 ```bash
-# 1. Create project structure
 cd ~/.openclaw/workspace/projects
-mkdir -p myproject/project myproject/library
+mkdir -p myproject/{project,library,TASKS}
+```
 
-# 2. Init or clone (for code projects)
+### 2. Set up code
+```bash
 cd myproject/project
 git init  # or: git clone <url> .
+```
 
-# 3. Create library files
+### 3. Create library files
+```bash
 cd ../library
 touch research.md decisions.md plans.md notes.md
-
-# 4. Create corresponding task if needed
-mkdir -p ~/.openclaw/workspace/TASKS/MYPROJECT
-# ... create TASK.md, HANDOFF.md, runs/
 ```
+
+### 4. Decide version control approach
+Ask the user (or decide based on project type — see "Version Control" section above).
+
+**If separate code repo:**
+```bash
+# project/ has its own git — create .gitignore at project root
+echo "project/" > myproject/.gitignore
+# Init knowledge repo
+cd myproject && git init
+```
+
+**If combined:**
+```bash
+# Everything in one repo
+cd myproject && git init
+```
+
+### 5. Create project task (if needed)
+```bash
+mkdir -p myproject/TASKS/BUILD/runs
+# Copy templates from framework/TASKS/
+cp framework/TASKS/EXAMPLE/TASK.md myproject/TASKS/BUILD/TASK.md
+cp framework/TASKS/HANDOFF.md myproject/TASKS/BUILD/
+cp framework/TASKS/CONTEXT.md myproject/TASKS/BUILD/
+```
+
+### 6. Record decision
+Add to `library/decisions.md`: version control approach chosen and why.
 
 ## Organization Tips
 
 - One project = one directory under projects/
-- project/ is always the git content
-- library/ is always local knowledge
-- Group related projects in subdirectories
-- Use clear, descriptive folder names
+- project/ is always the actual work (code, research, etc.)
+- library/ is always agent knowledge
+- TASKS/ holds project-specific tasks
+- Group related projects in subdirectories if needed
 - Archive old projects: `projects/archive/`
 
 ## Why This Matters
