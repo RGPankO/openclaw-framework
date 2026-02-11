@@ -21,8 +21,9 @@ After reading TASK.md, before doing the work:
 
 1. **Read `HANDOFF.md`** — Understand current state, what happened last time, advice from previous run
 2. **Read `CONTEXT.md`** — Long-term project facts
-3. **Optionally scan `runs/`** — If you need more historical context, check recent session logs
-3. **If task specifies a Role** — Read the role file mentioned in TASK.md
+3. **Read `NOTES.md`** — User instructions left between runs. **Immediately wipe NOTES.md** after reading (replace with `# Notes\n`). Then act on the notes as part of your session — wire lasting knowledge into CONTEXT.md or HANDOFF.md when appropriate (could be immediately, could be at end of session, depends on the note).
+4. **Optionally scan `runs/`** — If you need more historical context, check recent session logs
+5. **If task specifies a Role** — Read the role file mentioned in TASK.md
 
 Then execute the task instructions.
 

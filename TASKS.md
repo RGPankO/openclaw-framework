@@ -17,6 +17,7 @@ workspace/TASKS/
 ├── SELF-MAINTAIN/              # Built-in task (TASK.md lives in framework/)
 │   ├── HANDOFF.md              # Current state (dynamic, updated each run)
 │   ├── CONTEXT.md              # Long-term project facts (one-liners)
+│   ├── NOTES.md                # User inbox (read + wiped by cron each run)
 │   └── runs/                   # Session history (append-only)
 │       ├── 2026-02-08-0800.md
 │       └── 2026-02-08-1400.md
@@ -30,6 +31,7 @@ workspace/projects/[name]/TASKS/
 │   ├── TASK.md                 # Instructions (project-specific, static)
 │   ├── HANDOFF.md
 │   ├── CONTEXT.md
+│   ├── NOTES.md
 │   └── runs/
 ```
 
@@ -59,7 +61,7 @@ Tasks about building, reviewing, or maintaining a specific project.
 Read TASKS/README.md for execution rules. Then read projects/[name]/TASKS/[TASK-NAME]/TASK.md and follow instructions.
 ```
 
-## The Three Elements
+## The Elements
 
 ### 1. TASK.md (Static Instructions)
 
@@ -160,7 +162,26 @@ Stable facts about the project that rarely change. One-liners only.
 - Main repo: github.com/org/project
 ```
 
-### 4. runs/ (Session History)
+### 4. NOTES.md (User Inbox)
+
+One-way inbox from the user (or main agent) to the cron. Write notes here between runs — the cron will pick them up.
+
+**Key behaviors:**
+- Cron reads NOTES.md at the **start** of every session
+- Cron **immediately wipes NOTES.md** after reading (replace with `# Notes\n`)
+- Then acts on the notes during the session — some notes are tasks to do, some are facts to remember, some are priority changes
+- Wire lasting knowledge into CONTEXT.md or HANDOFF.md when appropriate (during or at end of session)
+- This prevents the cron from overwriting user instructions — user writes NOTES.md, cron writes HANDOFF.md, no conflicts
+
+```markdown
+# Notes
+
+- Fix the payment confirmation message — bot should reply after successful payment
+- Register /start /subscribe /status as bot commands
+- Skip gym leads, focus on Portugal and Poland
+```
+
+### 5. runs/ (Session History)
 
 Append-only directory of session logs. Each run creates a new file.
 
@@ -184,16 +205,17 @@ When a task cron fires:
 ```
 1. Read framework/TASKS/README.md — Learn execution rules
 2. Read TASK.md — From framework/ (built-in) or project (custom)
-3. Read HANDOFF.md — Current state from last run (always in instance/project dir)
-4. Read CONTEXT.md — Long-term project facts (always in instance/project dir)
-5. (Optional) Scan runs/ — If need more historical context
-6. If TASK.md specifies a Role — Read that role file
-7. Execute the task instructions
-8. Re-read HANDOFF.md — It may have been updated by another session since you last read it
-9. Update HANDOFF.md — Merge your changes with any new content, then write current state for next run
-10. Write to runs/YYYY-MM-DD-HHMM.md — Session log
-11. Send summary if configured
-12. Exit — Don't start new work beyond the task scope
+3. Read HANDOFF.md — Current state from last run
+4. Read CONTEXT.md — Long-term project facts
+5. Read NOTES.md — User instructions. WIPE NOTES.md immediately after reading. Act on notes during session, wire lasting knowledge into CONTEXT/HANDOFF when appropriate.
+6. (Optional) Scan runs/ — If need more historical context
+7. If TASK.md specifies a Role — Read that role file
+8. Execute the task instructions
+9. Re-read HANDOFF.md — It may have been updated by another session since you last read it
+10. Update HANDOFF.md — Merge your changes with any new content, then write current state for next run
+11. Write to runs/YYYY-MM-DD-HHMM.md — Session log
+12. Send summary if configured
+13. Exit — Don't start new work beyond the task scope
 ```
 
 ## Cron Configuration
