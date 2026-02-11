@@ -60,6 +60,15 @@ Before implementing, ask: *"Will someone in 5 years understand why this code exi
 
 If the answer is uncertain → choose the cleaner approach.
 
+## Credentials & Secrets
+
+- **NEVER hardcode** credentials, API keys, passwords, or tokens in source code
+- **ALL secrets go in `.env`** (which MUST be in `.gitignore`)
+- **Use `.env.example`** to document required variables with empty values or placeholders
+- **Fallback defaults** in code must NEVER be real credentials -- use empty string or throw a clear error if missing
+- **No exceptions**: SSH passwords, database passwords, API auth headers, Stripe keys, webhook secrets -- all `.env`
+- **If secrets are already in git history**: rotate them after moving to `.env` (old values are compromised)
+
 ## Code Structure
 
 ### Functions
