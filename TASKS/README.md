@@ -50,7 +50,7 @@ Then execute the task instructions.
    - Stage and commit with a descriptive message (see `framework/PROJECTS.md` for branch workflow)
    - Push if remote is configured
 
-5. **Send summary** if delivery is configured
+5. **Send summary to user** — Send your session summary (what you did, key findings, next steps) directly via the message tool. Check `USER-SETTINGS.md` for `delivery_channel` and `delivery_target`. This is required — cron announce delivery is unreliable, so always send directly.
 
 ## HANDOFF.md Format
 

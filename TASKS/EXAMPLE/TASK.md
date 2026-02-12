@@ -72,7 +72,7 @@ Every [X hours/minutes] | Daily at [time] | etc.
    ```
    Do NOT push — Self-Maintain handles nightly pushes.
 
-5. **Send summary** to user if configured
+5. **Send summary to user** — Before ending, send your session summary (what you did, key findings, next steps) directly via the message tool. Check `USER-SETTINGS.md` for delivery channel and target. This is required — cron announce delivery is unreliable.
 
 ## Success Criteria
 

@@ -36,6 +36,18 @@ mission: true               # Purpose-driven agent with MISSION.md
 writing_style: true         # Human-like writing, anti-AI-detection guidelines
 ```
 
+## Cron Delivery
+
+Cron jobs can send session summaries directly to you via messaging. This is more reliable than OpenClaw's built-in announce delivery.
+
+```yaml
+# Delivery — where cron summaries are sent
+delivery_channel: telegram       # Channel plugin (telegram, discord, slack, signal, etc.)
+delivery_target: "123456789"     # Your user/chat ID on that channel
+```
+
+When configured, every cron task will send a summary at the end of its run using the message tool. The cron's `delivery` config should use `mode: "announce"` so the main agent session also receives summaries.
+
 ## Model Configuration
 
 Configure which models to use for different task types (saves tokens!):
