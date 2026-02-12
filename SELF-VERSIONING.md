@@ -30,11 +30,14 @@ The agent's personality files. Shared by all instances of the same agent.
 SOUL.md              # Personality, vibe, communication style
 IDENTITY.md          # Name, creature, emoji
 USER.md              # About the human
+avatar/              # Agent's avatar image (optional)
 ```
+
+The avatar is part of the agent's identity — it travels with the soul. During setup, the user can generate or provide an avatar image. Store it in `avatar/` alongside the identity files.
 
 ### Why separate?
 
-If you run multiple instances (assistant, researcher, supervisor), they all share the same soul. Update SOUL.md once, pull everywhere.
+If you run multiple instances (assistant, researcher, supervisor), they all share the same soul. Update SOUL.md once, pull everywhere. Same avatar, same personality, different jobs.
 
 ---
 

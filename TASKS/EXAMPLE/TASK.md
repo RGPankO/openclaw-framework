@@ -30,6 +30,7 @@ Every [X hours/minutes] | Daily at [time] | etc.
 1. Read `HANDOFF.md` — current state from last run
 2. Optionally scan `runs/` for additional historical context
 3. Check project `library/` if working on a specific project
+4. If project has `project/README.md` (multi-repo project), read it to understand sub-project layout and ownership
 
 ## Instructions
 

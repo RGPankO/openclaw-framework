@@ -31,6 +31,54 @@ workspace/projects/
     └── TASKS/
 ```
 
+## Scaling: Single Repo to Multi-Repo
+
+The `project/` directory is always the boundary for code. It starts simple and grows naturally.
+
+### Single repo (default)
+
+Code lives directly in `project/`:
+
+```
+projects/my-saas/
+├── project/                # One git repo
+│   ├── src/
+│   ├── package.json
+│   └── ...
+├── library/
+└── TASKS/
+```
+
+### Multi-repo (when the project grows)
+
+When a project needs multiple deployable components (e.g., API + dashboard, detector + bot), create named subdirectories inside `project/`:
+
+```
+projects/my-platform/
+├── project/
+│   ├── api/               # Git repo 1
+│   ├── dashboard/         # Git repo 2
+│   ├── mobile/            # Git repo 3 (paused — user refactoring)
+│   └── README.md          # Map: what's what, who owns what
+├── library/
+└── TASKS/
+```
+
+**Rules:**
+- `project/README.md` documents all sub-projects: what they are, which are active, which are paused, who's working on what
+- When a sub-project is "owned" by someone (user, another agent, external tool), note it in README.md so crons don't touch it
+- TASKS/ and library/ stay at project level — they provide shared context across all sub-projects
+- Start with flat `project/` — only nest when you actually add a second component
+- TASK.md should reference `project/README.md` so task agents know to read it before working
+
+**Migration from flat to nested:**
+1. Move `project/` contents into `project/[original-name]/`
+2. Create `project/[new-component]/`
+3. Add `project/README.md` documenting both
+4. Update TASK.md, CONTEXT.md, and cron prompt paths
+
+---
+
 ## Version Control: Separate Code or Combined?
 
 A project's `project/` directory (the actual code/website) can be version-controlled two ways:

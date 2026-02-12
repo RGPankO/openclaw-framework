@@ -1,50 +1,21 @@
-# OpenClaw Workspace .gitignore
-# Copy this to workspace/.gitignore
+# Instance .gitignore
+# Copy this to your workspace root as .gitignore
 
-# ===================
-# Per-Instance (Never Commit)
-# ===================
-
-# Memory is instance-specific
-MEMORY.md
-memory/
-
-# Secrets
+# Sensitive
 CREDENTIALS.md
 
-# ===================
-# Ephemeral (Don't Need Versioning)
-# ===================
+# Identity (comes from identity repo — includes avatar)
+SOUL.md
+IDENTITY.md
+USER.md
+avatar/
 
-todo/
-reminders/
-
-# ===================
-# Separate Repos
-# ===================
-
-# Framework has its own repo
+# Separate repos
 framework/
-
-# Projects have their own repos
 projects/
-
-# ===================
-# Optional (Uncomment if private)
-# ===================
-
-# USER.md contains info about your human - may be private
-# USER.md
-
-# TOOLS.md may contain local paths or sensitive tool configs
-# TOOLS.md
-
-# ===================
-# System
-# ===================
-
 *.log
 .DS_Store
 node_modules/
-.env
-.env.*
+
+# Trash
+.trash/
