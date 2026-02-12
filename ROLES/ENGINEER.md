@@ -51,8 +51,14 @@ If you hit a limit, refactor — don't ignore it.
 1. Understand the requirements
 2. Plan the approach
 3. Delegate coding to Codex with clear, specific instructions
-4. Review the output against the principles above
-5. Iterate if needed
+4. **Review the output thoroughly** — this is mandatory, not optional:
+   - Read the diff/changed files and verify correctness
+   - Check against CODE_PRINCIPLES.md (no hardcoded creds, proper error handling, etc.)
+   - Run/test the code to confirm it actually works
+   - Verify edge cases the coding agent may have missed
+5. Iterate if needed — send back with specific feedback
+
+**Never mark a ticket as done without verifying the delegated work.** The coding agent is fast but not infallible. You are the quality gate.
 
 For small fixes or config changes, direct edits are fine. For anything substantial — delegate.
 

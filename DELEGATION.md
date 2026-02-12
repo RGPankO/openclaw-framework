@@ -116,6 +116,20 @@ The coding agent doesn't inherit your context. Without this, it codes with its o
 bash pty:true workdir:[path] background:true command:"codex --yolo exec 'Read framework/docs/CODE_PRINCIPLES.md, framework/docs/FILE_PRINCIPLES.md, and framework/docs/COMMIT_GUIDELINES.md first. Then: [task]. When done: openclaw system event --text \"Done: [summary]\" --mode now'"
 ```
 
+## Post-Delegation Review (MANDATORY)
+
+**After the coding agent finishes, you MUST review before marking done:**
+
+1. **Read the diff** — `git diff` or check changed files. Understand what was changed.
+2. **Verify correctness** — Does the code do what you asked? Any obvious bugs?
+3. **Check principles** — No hardcoded credentials? Proper error handling? Clean code?
+4. **Test it** — Run the code, hit the endpoint, check the output. Don't trust "it compiled."
+5. **Check edge cases** — What happens with empty data? Missing fields? Network errors?
+
+If something's wrong, send the agent back with specific feedback. Don't fix it yourself unless it's trivial.
+
+**The coding agent is your hands. You are the brain and the quality gate.**
+
 **Fallback (if Codex unavailable):**
 Use worker model with explicit coding instructions, but expect higher token cost.
 
