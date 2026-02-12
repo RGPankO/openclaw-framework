@@ -270,6 +270,8 @@ chore/[short-description]      # Maintenance, deps, cleanup
 
 ## Creating a New Project
 
+At creation, immediately set up version control. Don't defer this.
+
 ### 1. Create structure
 ```bash
 cd ~/.openclaw/workspace/projects
@@ -288,22 +290,26 @@ cd ../library
 touch research.md decisions.md plans.md notes.md
 ```
 
-### 4. Decide version control approach
-Ask the user (or decide based on project type — see "Version Control" section above).
+### 4. Initialize knowledge repo + remote
 
-**If separate code repo:**
 ```bash
-# project/ has its own git — create .gitignore at project root
-echo "project/" > myproject/.gitignore
-# Init knowledge repo
-cd myproject && git init
+cd myproject
+# Create .gitignore
+echo "project/" > .gitignore
+echo ".DS_Store" >> .gitignore
+
+# Init and first commit
+git init
+git add -A
+git commit -m "Initial project setup"
+
+# Create private remote and push
+gh repo create [owner]/[name] --private --source . --push
 ```
 
-**If combined:**
-```bash
-# Everything in one repo
-cd myproject && git init
-```
+**This happens at project creation, not later.** The remote repo must exist from the start so that:
+- Local commits are backed up nightly by Self-Maintain
+- Another instance can clone the project and pick up where you left off
 
 ### 5. Create project task (if needed)
 ```bash
@@ -316,6 +322,40 @@ cp framework/TASKS/CONTEXT.md myproject/TASKS/BUILD/
 
 ### 6. Record decision
 Add to `library/decisions.md`: version control approach chosen and why.
+
+---
+
+## Git Workflow for Running Projects
+
+### Task agents (every run)
+
+After completing work, as part of the "Before Ending" steps:
+
+```bash
+cd projects/[name]
+git add -A
+git commit -m "[task name]: brief session summary"
+```
+
+Commit locally every run. This preserves continuity even if the machine crashes.
+
+Task agents do NOT push — that's Self-Maintain's job.
+
+If the project dir has no `.git` yet (edge case — project created without following the steps above):
+
+```bash
+git init
+# Create .gitignore per framework template
+git add -A
+git commit -m "Initial commit"
+```
+
+### Self-Maintain (nightly)
+
+1. Scan all `projects/*/` for git repos
+2. If a repo has no remote: create private GitHub repo, add remote
+3. Push all repos that have unpushed commits
+4. Push the instance repo
 
 ## Organization Tips
 

@@ -64,7 +64,15 @@ Every [X hours/minutes] | Daily at [time] | etc.
    - Future plans → `library/plans.md`
    - Other notes → `library/notes.md`
 
-4. **Send summary** to user if configured
+4. **Commit project changes** (if working on a project with git):
+   ```bash
+   cd projects/[name]
+   git add -A
+   git commit -m "[task]: brief session summary"
+   ```
+   Do NOT push — Self-Maintain handles nightly pushes.
+
+5. **Send summary** to user if configured
 
 ## Success Criteria
 
