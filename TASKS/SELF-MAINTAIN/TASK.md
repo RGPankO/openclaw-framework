@@ -31,6 +31,13 @@ workspace/TASKS/*.md
 workspace/framework/*.md
 ```
 
+**Self-files to always check:**
+- AGENTS.md, SOUL.md, IDENTITY.md, USER.md
+- MEMORY.md, ACTIVE-CONTEXT.md, MISSION.md
+- TOOLS.md, FIXES.md
+- USER-SETTINGS.md, FRAMEWORK-OVERRIDES.md
+- All files in ROLES/
+
 For each file, check character count:
 - ✅ **Green (<15,000):** Healthy
 - 🟡 **Yellow (15,000-17,000):** Note for awareness

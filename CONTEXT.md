@@ -205,6 +205,19 @@ When you see "Summary unavailable due to context limits" or similar:
 | memory/daily-brief-*.md | Today's shared log | All sessions | After any work |
 | MEMORY.md | Long-term curated memory | Main only | Significant events |
 | memory/sessions/main/*.md | Detailed main session logs | Main only | Detailed handover needed |
+| FIXES.md | Debug log, solved problems | All sessions | After fixing bugs |
+
+### FIXES.md (Debug Memory)
+
+**Location:** `workspace/FIXES.md`
+
+Log of bugs fixed and problems solved. Prevents repeating past mistakes.
+
+**Read:** When encountering errors, unexpected behavior, or before attempting workarounds
+**Write:** After fixing any non-trivial bug or discovering a non-obvious solution
+**Maintain:** All sessions can add, update, or remove entries
+
+See `framework/FIXES.md` for format and guidelines.
 
 ---
 

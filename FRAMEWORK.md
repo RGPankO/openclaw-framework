@@ -57,7 +57,7 @@ OpenClaw auto-injects SOUL.md, IDENTITY.md, USER.md, AGENTS.md into the system p
 - `workspace/USER-SETTINGS.md`, `FRAMEWORK-OVERRIDES.md` — Preferences
 - `workspace/MEMORY.md`, `memory/` — Instance memory (portable)
 - `workspace/ROLES/`, `TASKS/` — Instance-level roles and tasks
-- `workspace/TOOLS.md`, `reminders/`, `todo/` — Instance state
+- `workspace/TOOLS.md`, `FIXES.md`, `reminders/`, `todo/` — Instance state
 
 **Never committed:**
 - `workspace/CREDENTIALS.md` — Secrets
@@ -190,6 +190,14 @@ How sessions maintain continuity across crons and compactions.
 - memory/daily-brief-YYYY-MM-DD.md — Shared log (all sessions append)
 - MEMORY.md — Long-term curated memory (main session only)
 - **Details:** `framework/CONTEXT.md`
+
+### Fixes Log (`workspace/FIXES.md`)
+Institutional memory for bugs and problems solved.
+- All sessions read when encountering errors
+- All sessions can add/update/remove entries
+- Prevents repeating past mistakes
+- Subject to same size limits as other self-files
+- **Details:** `framework/FIXES.md`
 
 ### Web Tools
 Browser-based management at `http://localhost:8890/`:

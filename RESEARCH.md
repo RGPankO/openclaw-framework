@@ -19,12 +19,41 @@ A research file sitting in `/research/` that nobody reads is wasted work. Resear
 
 ## During Research
 
-### Use Reliable Sources
+### Source Hierarchy (Trust Levels)
 
-1. **Primary sources first** — Official websites, documentation, original studies
-2. **Verify claims** — Don't trust search snippets or blog summaries
-3. **Check dates** — Information goes stale quickly
-4. **Include source URLs** — Everything should be verifiable
+**Primary sources (most reliable):**
+- Official websites, documentation, pricing pages
+- Original studies, whitepapers, press releases
+- App Store / Play Store listings (for app research)
+
+**Secondary sources (verify claims):**
+- News articles, blog posts
+- Comparison sites, review aggregators
+- Social media, Reddit (good for sentiment, not facts)
+
+**Do NOT trust without verification:**
+- Search result snippets (often outdated, summarized wrong)
+- AI-generated summaries from other tools
+- Comparison blogs (mix up details, go stale fast)
+- Aggregator sites (may have outdated info)
+
+### Verification Rules (Mandatory)
+
+1. **Go to the actual source** — Click through to official sites, don't rely on snippets
+2. **Verify exact names/versions** — Similar names ≠ same thing (e.g., "Pro" vs "Pro Max")
+3. **Compare apples to apples** — Same tier, same version, same time period
+4. **Check the date** — Pricing, features, and availability change frequently
+5. **Include source URLs** — Every claim should be verifiable
+6. **State confidence level** — Be explicit about what you verified vs inferred
+
+### Confidence Levels
+
+Use these when reporting findings:
+- ✅ **Verified** — Confirmed on official/primary source
+- ⚠️ **Secondary** — From blog, article, or aggregator (may be stale)
+- ❓ **Unverified** — Couldn't find official confirmation
+
+**Example:** "Pricing is $9.99/month ✅ (verified on official pricing page 2026-02-10)"
 
 ### Stay Focused
 
@@ -36,6 +65,7 @@ If you can't verify something:
 - Say "unverified" explicitly
 - Include what you found AND where
 - Note confidence level
+- Don't present guesses as facts
 
 ## After Research
 
