@@ -143,6 +143,18 @@ Skip research that can't lead to action:
 - Funding announcements (unless competitive intel)
 - Anything you can't answer: "How do we USE this?"
 
+## Development Time Estimates
+
+**Traditional dev estimates are wildly wrong in an AI-coding world.** Divide by 5.
+
+- AI coding tools (Codex, Claude Code) make development dramatically faster
+- "2-3 months" in traditional terms = 2-3 weeks with AI coding
+- Don't rule out ideas for being "too complex to build"
+- Re-evaluate feasibility assuming AI does 80% of the coding work
+- Infrastructure costs matter more than dev time now
+
+**When reporting build estimates:** Always give the AI-adjusted estimate, not the traditional one. If you'd estimate "3 months for a team of 2," say "2-3 weeks with AI coding."
+
 ## Important Rules
 
 1. **Check before researching** — Don't duplicate work
