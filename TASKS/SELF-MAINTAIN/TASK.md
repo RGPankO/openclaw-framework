@@ -205,15 +205,14 @@ Create a summary:
 2. [Action item]
 ```
 
-### 10. Notify User
+### 10. Send Summary to User
 
-If any issues found:
-- Send summary to user via communication channel
-- Include severity level (info/warning/critical)
+**Always send a summary** via the message tool. Check `USER-SETTINGS.md` for `delivery_channel` and `delivery_target`.
 
-If all healthy:
-- Log "Self-maintain completed, no issues" to daily log
-- Don't notify user (no news is good news)
+If issues found: include severity level (info/warning/critical).
+If all healthy: send a brief "all healthy" confirmation with key stats.
+
+This is required -- cron announce delivery is unreliable, so always send directly.
 
 ## Success Criteria
 

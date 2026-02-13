@@ -177,6 +177,12 @@ If update fails mid-way:
 - Notify user with recovery steps
 - Don't leave repo in broken state
 
+## Send Summary to User
+
+**Always send a summary** via the message tool. Check `USER-SETTINGS.md` for `delivery_channel` and `delivery_target`. This is required -- cron announce delivery is unreliable, so always send directly.
+
+Include: update status, what changed, any action needed.
+
 ## Logging
 
 Log to: `memory/YYYY-MM-DD.md`
