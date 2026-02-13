@@ -119,9 +119,51 @@ If the workspace has a git repo initialized (instance backup):
 4. Commit with a descriptive message summarizing what changed
 5. Push if remote is configured
 
-**Scope: instance repo only.** Do not touch project repos or identity repos — those are managed separately by their respective tasks or manually.
-
 If no git repo is initialized, skip this step silently.
+
+### 8b. Project & Knowledge Repo Backup
+
+Scan all directories under `projects/`. For each project directory:
+
+1. Check if it has a git repo initialized (`git -C <path> rev-parse --git-dir`)
+2. **If no repo:** Flag it in the report — every project directory should be version controlled
+3. **If repo exists:**
+   - Run `git status` — check for uncommitted changes
+   - Stage and commit any changes with a descriptive message
+   - Push if remote is configured
+   - If push fails (no remote), flag in report
+
+Also check subdirectories — projects may have multiple repos (e.g., `project/seo/`, `project/homepage/`, `library/`). Each git root gets its own commit+push.
+
+**Include identity repo** if one exists (check for `SOUL.md`, `IDENTITY.md` in workspace root or a configured identity path).
+
+Report format per repo:
+- ✅ Clean (no changes)
+- 📦 Committed + pushed (N files changed)
+- ⚠️ Committed but no remote
+- 🚨 No git repo initialized
+
+### 8c. Framework Compliance Audit
+
+Check that the instance follows the framework correctly:
+
+1. **Framework version:** Compare `framework/` git HEAD with the remote. Flag if behind.
+2. **Override audit:** Read `FRAMEWORK-OVERRIDES.md` — list all active overrides. Flag any that contradict core framework rules (README.md, TASKS.md).
+3. **Cron prompt check:** For each enabled cron, verify:
+   - Built-in tasks point to `framework/TASKS/` for TASK.md (not local copies)
+   - Instance state dirs exist (HANDOFF.md, CONTEXT.md, runs/)
+   - NOTES.md exists in each task dir
+4. **File structure check:** Verify the expected framework structure:
+   - `framework/` dir exists and is a git repo
+   - Key framework files present (README.md, TASKS.md, FRAMEWORK.md)
+   - No stale TASK.md copies in instance task dirs (for built-in tasks)
+5. **Divergence detection:** Flag anything that looks like it was copied from framework and modified locally instead of using FRAMEWORK-OVERRIDES.md
+
+Report format:
+- Framework version: current hash, behind by N commits (or up to date)
+- Overrides: N active (list them)
+- Cron health: N/N crons properly configured
+- Divergence: any issues found
 
 ### 9. Generate Report
 
@@ -146,6 +188,17 @@ Create a summary:
 
 ### Stale TODOs
 - [List or "None"]
+
+### Version Control
+- Instance repo: [status]
+- Project repos: [N repos checked, status each]
+- Identity repo: [status]
+
+### Framework Compliance
+- Framework version: [hash, up to date / behind by N]
+- Overrides: [N active]
+- Cron health: [N/N OK]
+- Divergence: [any issues]
 
 ### Recommendations
 1. [Action item]
