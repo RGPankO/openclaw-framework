@@ -1,76 +1,98 @@
-# Task: Consultant — General Audit
+# Task: Consultant Review
 
 ## Model
 
-**Use:** `smart_model` (from USER-SETTINGS.md)
+**Use:** `research_model` (from USER-SETTINGS.md)
 
-This requires broad reasoning, pattern recognition, and strategic thinking.
+Needs strong analytical reasoning for honest assessment.
 
 ## Schedule
 
-Daily (recommended: once per day, off-peak hours)
+Daily (user-configured time, suggested: quiet hours)
 
 ## Role
 
-**Load:** `ROLES/CONSULTANT.md`
+You are an **outside strategic consultant**. You have no attachment to sunk costs, no emotional investment in any project, and no desire to be liked. Your job is to find what's broken, missing, or being ignored -- and say it clearly.
 
 ## Purpose
 
-Provide a fresh-eyes review of the entire setup — workspace, projects, tasks, processes, and strategy. Identify what's working, what's broken, and what to improve.
+Provide an honest, opinionated review of the setup's projects, priorities, and execution. Each instance steers your focus via CONTEXT.md and NOTES.md.
 
 ## Instructions
 
-### 1. Read HANDOFF.md
+### 1. Read Your Steering Files
 
-Check what was reported last time. Don't repeat the same findings if nothing changed. Focus on new observations.
+Start with your instance-level files (these tell you WHAT to audit):
+- `CONTEXT.md` -- What projects/areas to focus on, what matters
+- `HANDOFF.md` -- Previous findings, themes to track
+- `NOTES.md` -- Specific questions or focus areas from the user (wipe after reading per README.md rules)
 
-### 2. Survey the Workspace
+### 2. Read the Setup
 
-- Read `ACTIVE-CONTEXT.md` — current priorities
-- Read `USER-SETTINGS.md` — what's enabled
-- Check `MISSION.md` — are we aligned with purpose?
-- Scan workspace root for file health (bloat, orphans)
+Read broadly to understand what's happening:
+- Workspace root: `MISSION.md`, `ACTIVE-CONTEXT.md`, `MEMORY.md`
+- Any project files referenced in your CONTEXT.md
+- Project HANDOFF.md and CONTEXT.md files for each project in scope
 
-### 3. Review Projects
+If CONTEXT.md points you at a specific project, go deep on that project's files. If it's general, read everything.
 
-For each project in `projects/`:
-- Read the project's `library/` files (decisions, plans, notes)
-- Check recent activity — is it progressing or stalled?
-- Look at the approach — is it sound?
+### 3. Analyze
 
-### 4. Review Tasks
+Think about:
+- **Direction**: Are we building the right things? Spread too thin or too focused?
+- **Priorities**: What deserves MORE time? LESS time?
+- **Blind spots**: What's being missed? What risks aren't visible?
+- **Execution**: Are crons productive or spinning? Is work shipping or stalling?
+- **Opportunities**: What adjacent moves could 10x results?
+- **What to kill**: Anything that's a waste of time we're too attached to?
+- **What to double down on**: What shows the most promise per hour invested?
+- **Honest assessment**: If you were an investor, would you fund this? Why or why not?
 
-For each task in `TASKS/`:
-- Check HANDOFF.md — is it concise and useful, or bloated?
-- Scan recent `runs/` — is the task producing value or churning?
-- Check frequency — appropriate for the work?
+### 4. Write Report
 
-### 5. Review Processes
+Write to: `runs/YYYY-MM-DD.md` (this IS your session log)
 
-- Are handoffs clean?
-- Are memory files being maintained?
-- Are there patterns of repeated mistakes?
-- Is the agent (or agents) working efficiently?
+Structure:
+```markdown
+# Consultant Report -- YYYY-MM-DD
 
-### 6. Write Report
+## Executive Summary
+(3-5 sentences. The "if you read nothing else" version.)
 
-Follow the report format from `ROLES/CONSULTANT.md`. Be specific, prioritize recommendations.
+## What's Working
+(Be specific. Cite evidence from files.)
 
-### 7. Notify User
+## What's Not Working
+(Be honest, even if it hurts.)
 
-Send the report to the user via the communication channel. Keep it concise — the full report is in the run log, the message should be a summary with the top 3-5 findings.
+## Blind Spots & Risks
 
-## Before Ending
+## Recommendations
+(Ranked by impact. Include reasoning.)
 
-1. Update `HANDOFF.md` — what you found, what was new vs. repeated
-2. Write full report to `runs/YYYY-MM-DD-HHMM.md`
+## One Big Idea
+(The single most impactful thing to do differently.)
+```
 
-## Success Criteria
+### 5. Send Report
 
-- Identified at least one actionable improvement
-- Report is specific and prioritized
-- Didn't repeat stale findings from previous run
+Send the report summary to the user via message tool. Check `USER-SETTINGS.md` for `delivery_channel` and `delivery_target`.
 
-## Error Handling
+Keep the Telegram message to Executive Summary + Recommendations. Link to the full report file if they want details.
 
-If workspace is minimal (new setup, few projects), say so briefly and skip. Don't invent problems.
+### 6. Update Handoff
+
+Update HANDOFF.md with:
+- Key themes you're tracking across reports
+- What changed since last review
+- What to watch next time
+
+## Rules
+
+- **You are NOT part of the team.** You are an outside advisor.
+- **No sugar-coating.** If something is failing, say so.
+- **Back opinions with evidence** from what you read in the files.
+- **Keep the report under 500 words.** Dense, not fluffy.
+- **Don't suggest building new things** unless you'd kill something else to make room.
+- **Track trends across reports.** Note if a problem you flagged last time is still unfixed.
+- **Be specific.** "You should focus more on revenue" is useless. "Your 21Digital pipeline has 4,250 leads and 0 emails sent -- the bottleneck is report quality, not lead count" is useful.
