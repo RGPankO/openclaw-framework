@@ -30,6 +30,11 @@ Pick up TODO items from `workspace/todo/` and work on them.
    ls ~/.openclaw/workspace/todo/*.md
    ```
 
+   **If no `.md` files** (excluding archive/) → No active TODOs. Disable this cron to save tokens:
+   - Use cron tool: `cron action=update jobId=[this-job-id] patch={"enabled": false}`
+   - Update HANDOFF.md: "Disabled TODO Processor — no active TODOs. Main agent will re-enable when new TODOs are created."
+   - Reply HEARTBEAT_OK and exit.
+
 2. **Pick highest priority:**
    - URGENT > HIGH > MEDIUM > LOW
    - Within same priority: oldest first (by filename date)
