@@ -98,3 +98,4 @@ Filename: `YYYY-MM-DD-HHMM.md`
 4. **Don't exceed scope** — Do the task, don't start unrelated work
 5. **Always log** — Every execution should be recorded
 6. **Read `framework/docs/CRON_BEST_PRACTICES.md`** — Core principles: ship every run, harvest before planting, always have a build queue, write recovery notes
+7. **The main session is your manager** — It sees all cron reports and may leave corrections in NOTES.md. Always check NOTES.md first (step 3 above). The main session has full context you don't have.

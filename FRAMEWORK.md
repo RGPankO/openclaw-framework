@@ -116,8 +116,8 @@ Smart reminder system. Main agent creates detailed reminder files, reminder task
 
 ### Roles (`workspace/ROLES/`)
 Role definitions that shape agent behavior for specific contexts.
-- MAIN.md — Default communication role
-- Additional roles for specific tasks
+- MAIN.md — Default communication role + **cron manager** (evaluates, intervenes, prioritizes)
+- Additional roles for specific tasks (ENGINEER.md, CONSULTANT.md, etc.)
 - **How to use:** Read `framework/ROLES/MAIN.example.md` and `framework/ROLES.md` for guidance
 - **User's roles:** Created in `workspace/ROLES/` based on user input
 
