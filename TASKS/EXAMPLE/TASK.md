@@ -27,14 +27,23 @@ Every [X hours/minutes] | Daily at [time] | etc.
 
 ## Before Starting
 
-1. Read `HANDOFF.md` — current state from last run
-2. Optionally scan `runs/` for additional historical context
-3. Check project `library/` if working on a specific project
-4. If project has `project/README.md` (multi-repo project), read it to understand sub-project layout and ownership
+1. **Harvest first** — Check for unfinished work from last run (git status, draft files, HANDOFF "in progress" items). Finish what's started before starting something new.
+2. Read `HANDOFF.md` — current state from last run
+3. Read `NOTES.md` — user instructions (wipe after reading)
+4. Optionally scan `runs/` for additional historical context
+5. Check project `library/` if working on a specific project
+6. If project has `project/README.md` (multi-repo project), read it to understand sub-project layout and ownership
+
+Also read `framework/docs/CRON_BEST_PRACTICES.md` for operational principles.
 
 ## Instructions
 
-<!-- The actual work to do each run -->
+<!-- The actual work to do each run. Key principles:
+     - Ship every run (never exit with just a status report)
+     - BUILD QUEUE always populated in HANDOFF.md
+     - "Waiting for X" is never priority 1
+     - If delegating to Codex: right-sized tasks, wait or write recovery notes
+-->
 
 ### Step 1: [First thing]
 [Details]

@@ -121,7 +121,31 @@ git pull origin main
 After pull completes, the framework is updated. Then:
 1. Read any migration notes in CHANGELOG.md
 2. Check if user.settings.md needs new fields
-3. Notify user: "Framework updated to v[new_version]. [any action needed]"
+3. **CRITICAL: Full Framework Wiring Check** (see step 8b)
+4. Notify user: "Framework updated to v[new_version]. [any action needed]"
+
+### 8b. Framework Wiring Check (ALWAYS after pulling)
+
+After every framework update, verify the instance is fully wired:
+
+1. **Check all framework docs are referenced where needed:**
+   - Read `framework/TASKS/README.md` — are all referenced docs present?
+   - Read `framework/docs/` — any new docs that tasks should reference?
+
+2. **Check cron prompts match framework expectations:**
+   - Do all cron prompts start with "Read framework/TASKS/README.md for execution rules"?
+   - Do built-in task crons (Self-Maintain, Auto-Update) point to `framework/TASKS/[NAME]/TASK.md`?
+
+3. **Check for new framework features that need wiring:**
+   - New docs in `framework/docs/` → should they be referenced in task files?
+   - New settings in `framework/USER-SETTINGS.example.md` → update instance `USER-SETTINGS.md`?
+   - New task templates → do existing tasks need updating?
+
+4. **Check example files match reality:**
+   - `framework/TASKS/EXAMPLE/TASK.md` — is it still accurate?
+   - `framework/USER-SETTINGS.example.md` — does it cover all current settings?
+
+5. **Report any discrepancies** in the update notification. If auto-applying, fix what you can and report what needs manual attention.
 
 ### 9. Log the Update
 

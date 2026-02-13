@@ -97,3 +97,4 @@ Filename: `YYYY-MM-DD-HHMM.md`
 3. **Be explicit** — Task agents may use simpler models; leave clear context
 4. **Don't exceed scope** — Do the task, don't start unrelated work
 5. **Always log** — Every execution should be recorded
+6. **Read `framework/docs/CRON_BEST_PRACTICES.md`** — Core principles: ship every run, harvest before planting, always have a build queue, write recovery notes
