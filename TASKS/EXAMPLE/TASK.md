@@ -5,7 +5,8 @@
 ## Project Location
 
 <!-- If this task works on a specific project -->
-- **Repo:** `projects/[name]/repo/`
+- **Read `projects/[name]/project/README.md`** first — maps sub-projects, repos, deployment
+- **Repo:** `projects/[name]/project/`
 - **Library:** `projects/[name]/library/`
 
 <!-- If no specific project, remove this section -->
