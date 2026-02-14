@@ -12,10 +12,11 @@ Every task has two parts:
 
 ```
 # Instance state (ALWAYS in workspace/TASKS/[task-name]/):
-HANDOFF.md   # Current state (read first, update at end)
-CONTEXT.md   # Long-term project facts (one-liners)
-NOTES.md     # User instructions (read and wipe immediately)
-runs/        # Session history (append-only logs)
+HANDOFF.md     # Current state (read first, update at end)
+CONTEXT.md     # Long-term project facts (one-liners)
+NOTES.md       # User instructions (read and wipe immediately)
+USER-TODO.md   # Items that need the USER to do (not you)
+runs/          # Session history (append-only logs)
 
 # Task definition (where cron prompt points you):
 TASK.md      # Either framework/TASKS/[name]/TASK.md or workspace/TASKS/[name]/TASK.md
@@ -33,8 +34,9 @@ After reading TASK.md, before doing the work:
    - **Immediately wipe NOTES.md** after reading (replace with `# Notes\n`).
    - **Carry forward into HANDOFF.md**: If notes set a new direction or priority shift, reflect that in your HANDOFF.md so the next run continues on the new course (not the old one). Don't let priority changes die with the wipe.
    - Wire lasting knowledge into CONTEXT.md when appropriate.
-4. **Optionally scan `runs/`** — If you need more historical context, check recent session logs
-5. **If task specifies a Role** — Read the role file mentioned in TASK.md
+4. **Optionally read `USER-TODO.md`** — Check if the user completed something you were waiting on. If they did, remove the item and proceed with work that was unblocked.
+5. **Optionally scan `runs/`** — If you need more historical context, check recent session logs
+6. **If task specifies a Role** — Read the role file mentioned in TASK.md
 
 Then execute the task instructions.
 
@@ -67,7 +69,9 @@ Follow the task's own "Before Ending" steps (if any), then **always** follow the
    - Stage and commit with a descriptive message (see `framework/PROJECTS.md` for branch workflow)
    - Push if remote is configured
 
-5. **Send summary to user** — Send your session summary (what you did, key findings, next steps) directly via the message tool. Check `USER-SETTINGS.md` for `delivery_channel` and `delivery_target`. This is **required every run** — cron announce delivery is unreliable, so always send directly. If USER-SETTINGS.md specifies `delivery_channel` and `delivery_target`, use those.
+5. **Update `USER-TODO.md`** — If you identified something only the user can do (manual testing, approvals, decisions, logins, purchases), add it here. **Do NOT put user-dependent items in HANDOFF.md's Next Steps** — those are YOUR work only. Never block on USER-TODO items; find other productive work instead. Format: simple checklist.
+
+6. **Send summary to user** — Send your session summary (what you did, key findings, next steps) directly via the message tool. Check `USER-SETTINGS.md` for `delivery_channel` and `delivery_target`. This is **required every run** — cron announce delivery is unreliable, so always send directly. If USER-SETTINGS.md specifies `delivery_channel` and `delivery_target`, use those.
 
 ## HANDOFF.md Format
 
@@ -81,11 +85,24 @@ Follow the task's own "Before Ending" steps (if any), then **always** follow the
 [What was just done — overwrite this section each run, never accumulate]
 
 ## Next Steps
-[What should happen next — prioritized, actionable]
+[YOUR work — things YOU can do next run. Prioritized, actionable.
+ Do NOT put user-dependent items here — those go in USER-TODO.md]
 
 ## Watch Out For
 [Gotchas, blockers, things to remember]
 ```
+
+## USER-TODO.md Format
+
+```markdown
+# User TODO
+
+- [ ] Test whale bot payment flow (@PolymarketWhaleAlert_bot /subscribe)
+- [ ] Approve design change for landing page
+- [ ] Log into Stripe and verify webhook endpoint
+```
+
+Items only the user can act on. Cron adds items, user/main session removes them when done.
 
 ## Session Log Format (runs/)
 
@@ -115,4 +132,5 @@ Filename: `YYYY-MM-DD-HHMM.md`
 4. **Don't exceed scope** — Do the task, don't start unrelated work
 5. **Always log** — Every execution should be recorded
 6. **Read `framework/docs/CRON_BEST_PRACTICES.md`** — Core principles: ship every run, harvest before planting, always have a build queue, write recovery notes
-7. **The main session is your manager** — It sees all cron reports and may leave corrections in NOTES.md. Always check NOTES.md first (step 3 above). The main session has full context you don't have. **When NOTES.md changes your priorities, your HANDOFF.md must reflect that new direction** — otherwise the next run reverts to the old plan and the user's intervention is lost.
+7. **Never block on user actions** — If something needs the user (manual testing, approvals, logins), put it in USER-TODO.md and move on to other productive work. Your Next Steps should always have things YOU can do.
+8. **The main session is your manager** — It sees all cron reports and may leave corrections in NOTES.md. Always check NOTES.md first (step 3 above). The main session has full context you don't have. **When NOTES.md changes your priorities, your HANDOFF.md must reflect that new direction** — otherwise the next run reverts to the old plan and the user's intervention is lost.
