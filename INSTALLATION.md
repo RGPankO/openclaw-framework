@@ -27,8 +27,8 @@ User says something like:
 
 Agent executes:
 ```bash
-mkdir -p ~/.openclaw/workspace/framework
-cd ~/.openclaw/workspace/framework
+mkdir -p framework
+cd framework
 git clone https://github.com/RGPankO/openclaw-framework .
 ```
 
@@ -330,7 +330,7 @@ Ready to go!"
 ### Step 15: Start Web Tools Server
 
 ```bash
-cd ~/.openclaw/workspace/framework/tools
+cd framework/tools
 npm install  # first time only
 nohup node server.js > /tmp/framework-server.log 2>&1 &
 ```
@@ -371,7 +371,7 @@ Agent can verify:
 ls ~/.openclaw/workspace/USER-SETTINGS.md
 ls ~/.openclaw/workspace/ACTIVE-CONTEXT.md
 ls ~/.openclaw/workspace/ROLES/MAIN.md
-ls ~/.openclaw/workspace/framework/FRAMEWORK.md
+ls framework/FRAMEWORK.md
 ```
 
 ### Set Up Self-Versioning (Optional)

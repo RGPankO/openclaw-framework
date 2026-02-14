@@ -48,7 +48,7 @@ Create at least an `index.html`:
 
 Copy the example file:
 ```bash
-cp ~/.openclaw/workspace/framework/tool-extensions.example.json ~/.openclaw/workspace/tool-extensions.json
+cp framework/tool-extensions.example.json tool-extensions.json
 ```
 
 Edit `tool-extensions.json`:
@@ -73,7 +73,7 @@ Edit `tool-extensions.json`:
 ```bash
 # If running manually
 pkill -f "framework/tools/server.js"
-cd ~/.openclaw/workspace/framework/tools && node server.js
+cd framework/tools && node server.js
 
 # Or tell your agent
 "Restart the framework tools server"

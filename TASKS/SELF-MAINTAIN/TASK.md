@@ -28,7 +28,7 @@ Scan all .md files in workspace root and key directories:
 workspace/*.md
 workspace/ROLES/*.md
 workspace/TASKS/*.md
-workspace/framework/*.md
+framework/*.md
 ```
 
 **Self-files to always check:**

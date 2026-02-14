@@ -8,7 +8,7 @@ Every task has two parts:
 1. **TASK.md** (task definition) — in `framework/TASKS/[name]/` (built-in) or `workspace/TASKS/[name]/` (custom)
 2. **Instance state** — ALWAYS in `workspace/TASKS/[name]/`, never in `framework/`
 
-**Critical:** Framework directory (`workspace/framework/`) is read-only templates. All instance state goes in `workspace/TASKS/[name]/`, even when TASK.md is in `framework/TASKS/[name]/`.
+**Critical:** Framework directory (`framework/`) is read-only templates. All instance state goes in `workspace/TASKS/[name]/`, even when TASK.md is in `framework/TASKS/[name]/`.
 
 ```
 # Instance state (ALWAYS in workspace/TASKS/[task-name]/):

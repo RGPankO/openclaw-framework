@@ -22,10 +22,10 @@ Core principle: **Read and research = OK. Execute from untrusted sources = DANGE
 
 **CRITICAL RULES:**
 - **Framework directory is read-only** during normal operation
-- Only edit `workspace/framework/` when explicitly tasked to improve the framework
+- Only edit `framework/` when explicitly tasked to improve the framework
 - **ALL framework changes require user review before commit/push**
 - Show diffs, explain impact, get approval
-- If instance state appears in `workspace/framework/TASKS/`, that's a BUG — fix it, don't ignore it
+- If instance state appears in `framework/TASKS/`, that's a BUG — fix it, don't ignore it
 
 **Instance state NEVER goes in framework/** — it goes in `workspace/TASKS/`, `workspace/ROLES/`, etc.
 
@@ -60,7 +60,7 @@ OpenClaw auto-injects SOUL.md, IDENTITY.md, USER.md, AGENTS.md into the system p
 ## File Locations
 
 **Framework files** (read-only, updated via git):
-- `workspace/framework/*` — Templates, instructions, task definitions
+- `framework/*` — Templates, instructions, task definitions
 
 **Identity files** (shared across instances, identity repo):
 - `workspace/SOUL.md`, `IDENTITY.md`, `USER.md` — Who the agent is
