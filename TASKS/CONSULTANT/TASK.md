@@ -47,6 +47,7 @@ Think about:
 - **What to kill**: Anything that's a waste of time we're too attached to?
 - **What to double down on**: What shows the most promise per hour invested?
 - **Honest assessment**: If you were an investor, would you fund this? Why or why not?
+- **Tooling & Automation**: Are we using our existing CLI tools and scripts correctly? What manual processes could be scripted/automated? What new tools (third-party or custom-built) could solve problems we're handling manually? How can we optimize our workflows and processes?
 
 ### 4. Write Report
 
