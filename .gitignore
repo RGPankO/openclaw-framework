@@ -6,3 +6,8 @@ tools/cron-cache.json
 
 # Logs
 *.log
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
