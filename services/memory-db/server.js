@@ -73,6 +73,15 @@ function formatDate(d) {
   return new Date(d).toLocaleString('en-GB', { timeZone: 'Europe/Sofia', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
+function instanceColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 45%)`;
+}
+
 // ---- HTML Templates ----
 
 function loginPage(error = '') {
@@ -102,6 +111,7 @@ function baseCSS() {
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e0e0e0;line-height:1.6}
 a{color:#818cf8;text-decoration:none}a:hover{text-decoration:underline}
 .container{max-width:1200px;margin:0 auto;padding:16px}
+mark{background:#7c3aed;color:#fff;padding:1px 3px;border-radius:2px}
 `;
 }
 
@@ -183,18 +193,22 @@ document.querySelectorAll('.msg-content').forEach(el => {
 </body></html>`;
 }
 
-function renderMessages(rows) {
+function renderMessages(rows, useHeadline = false) {
   if (!rows.length) return '<div class="empty">No messages found</div>';
-  return rows.map(r => `
+  return rows.map(r => {
+    const content = useHeadline && r.headline ? r.headline : escapeHtml(r.content);
+    const color = instanceColor(r.instance);
+    return `
 <div class="msg ${r.role}">
   <div class="msg-meta">
-    <span class="instance">${escapeHtml(r.instance)}</span>
+    <span class="instance" style="background:${color};color:#fff">${escapeHtml(r.instance)}</span>
     <span class="role ${r.role}">${r.role}</span>
     <span>${formatDate(r.created_at)}</span>
     ${r.rank ? `<span>relevance: ${parseFloat(r.rank).toFixed(3)}</span>` : ''}
   </div>
-  <div class="msg-content">${escapeHtml(r.content)}</div>
-</div>`).join('');
+  <div class="msg-content">${content}</div>
+</div>`;
+  }).join('');
 }
 
 // ---- Routes ----
@@ -221,11 +235,22 @@ async function handleSearch(url) {
     
     const { rows: r } = await pool.query(
       `SELECT instance, role, content, created_at,
-              ts_rank(to_tsvector('english', content), websearch_to_tsquery('english', $1)) as rank
+              ts_rank(to_tsvector('english', content), websearch_to_tsquery('english', $1)) as rank,
+              ts_headline('english', content, websearch_to_tsquery('english', $1),
+                'StartSel=<mark>, StopSel=</mark>, MaxFragments=2, MaxWords=30') as headline
        FROM ${SCHEMA}.messages
        WHERE ${where.join(' AND ')}
        ORDER BY rank DESC, created_at DESC
        LIMIT $2 OFFSET $3`, params
+    );
+    rows = r;
+  } else {
+    // Default: show latest 50 messages
+    const { rows: r } = await pool.query(
+      `SELECT instance, role, content, created_at
+       FROM ${SCHEMA}.messages
+       ORDER BY created_at DESC
+       LIMIT $1 OFFSET $2`, [limit, offset]
     );
     rows = r;
   }
@@ -244,10 +269,10 @@ async function handleSearch(url) {
   const nextPage = rows.length === limit ? `<a href="/?${queryParams}&page=${page+1}">Next →</a>` : '';
 
   const html = `
-<form class="search-box" method="GET" action="/">
-  <input type="text" name="q" value="${escapeHtml(q)}" placeholder="Search conversations..." autofocus>
-  <select name="instance"><option value="">All instances</option>${instanceOptions}</select>
-  <select name="role">
+<form class="search-box" method="GET" action="/" id="searchForm">
+  <input type="text" name="q" id="searchInput" value="${escapeHtml(q)}" placeholder="Search conversations..." autofocus>
+  <select name="instance" id="instanceFilter"><option value="">All instances</option>${instanceOptions}</select>
+  <select name="role" id="roleFilter">
     <option value="">All roles</option>
     <option value="user" ${role === 'user' ? 'selected' : ''}>User</option>
     <option value="assistant" ${role === 'assistant' ? 'selected' : ''}>Assistant</option>
@@ -258,9 +283,172 @@ async function handleSearch(url) {
   </div>
   <button type="submit">Search</button>
 </form>
-${q ? `<p style="color:#6b7280;margin-bottom:16px">${rows.length} result${rows.length !== 1 ? 's' : ''} for "${escapeHtml(q)}"${instance ? ' in ' + escapeHtml(instance) : ''}</p>` : ''}
-${q ? renderMessages(rows) : '<div class="empty">Search across 12,000+ messages from all OpenClaw instances</div>'}
-${(prevPage || nextPage) ? `<div class="page-nav">${prevPage}${nextPage}</div>` : ''}`;
+${q ? `<p style="color:#6b7280;margin-bottom:16px" id="resultCount">${rows.length} result${rows.length !== 1 ? 's' : ''} for "${escapeHtml(q)}"${instance ? ' in ' + escapeHtml(instance) : ''}</p>` : ''}
+<div id="resultsContainer">
+${q ? renderMessages(rows, true) : renderMessages(rows, false)}
+</div>
+${(prevPage || nextPage) ? `<div class="page-nav">${prevPage}${nextPage}</div>` : ''}
+<script>
+let searchTimeout;
+const searchInput = document.getElementById('searchInput');
+const resultsContainer = document.getElementById('resultsContainer');
+const resultCount = document.getElementById('resultCount');
+let isLoading = false;
+let offset = ${q ? rows.length : limit};
+
+// Live search on keydown (debounced)
+searchInput?.addEventListener('input', (e) => {
+  clearTimeout(searchTimeout);
+  const query = e.target.value.trim();
+  
+  if (query.length >= 3) {
+    searchTimeout = setTimeout(() => performSearch(query), 300);
+  } else if (query.length === 0) {
+    // Empty query = show default latest messages
+    searchTimeout = setTimeout(() => loadDefaultMessages(), 300);
+  }
+});
+
+async function performSearch(query) {
+  const instance = document.getElementById('instanceFilter')?.value || '';
+  try {
+    const res = await fetch(\`/api/search?q=\${encodeURIComponent(query)}&instance=\${instance}\`);
+    const data = await res.json();
+    displayResults(data.results, query, true);
+  } catch (err) {
+    console.error('Search error:', err);
+  }
+}
+
+async function loadDefaultMessages() {
+  try {
+    const res = await fetch(\`/api/messages?offset=0&limit=50\`);
+    const data = await res.json();
+    displayResults(data.results, '', false);
+    offset = data.results.length;
+  } catch (err) {
+    console.error('Load error:', err);
+  }
+}
+
+function displayResults(results, query, isSearch) {
+  if (!results.length) {
+    resultsContainer.innerHTML = '<div class="empty">No messages found</div>';
+    if (resultCount) resultCount.textContent = '';
+    return;
+  }
+  
+  if (resultCount && query) {
+    resultCount.textContent = \`\${results.length} result\${results.length !== 1 ? 's' : ''} for "\${query}"\`;
+  } else if (resultCount) {
+    resultCount.textContent = '';
+  }
+  
+  resultsContainer.innerHTML = results.map(r => {
+    const content = isSearch && r.headline ? r.headline : escapeHtml(r.content);
+    const color = instanceColor(r.instance);
+    return \`
+<div class="msg \${r.role}">
+  <div class="msg-meta">
+    <span class="instance" style="background:\${color};color:#fff">\${escapeHtml(r.instance)}</span>
+    <span class="role \${r.role}">\${r.role}</span>
+    <span>\${formatDate(r.created_at)}</span>
+    \${r.rank ? \`<span>relevance: \${parseFloat(r.rank).toFixed(3)}</span>\` : ''}
+  </div>
+  <div class="msg-content">\${content}</div>
+</div>\`;
+  }).join('');
+  
+  // Re-attach expand handlers
+  attachExpandHandlers();
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleString('en-GB', { timeZone: 'Europe/Sofia', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function instanceColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return \`hsl(\${hue}, 70%, 45%)\`;
+}
+
+function attachExpandHandlers() {
+  document.querySelectorAll('.msg-content').forEach(el => {
+    const existingBtn = el.nextElementSibling;
+    if (existingBtn?.classList.contains('expand-btn')) {
+      existingBtn.remove();
+    }
+    
+    if (el.scrollHeight > 300) {
+      el.classList.add('truncated');
+      const btn = document.createElement('span');
+      btn.className = 'expand-btn';
+      btn.textContent = 'Show more ▼';
+      btn.onclick = () => {
+        el.classList.toggle('expanded');
+        el.classList.toggle('truncated');
+        btn.textContent = el.classList.contains('expanded') ? 'Show less ▲' : 'Show more ▼';
+      };
+      el.parentNode.insertBefore(btn, el.nextSibling);
+    }
+  });
+}
+
+// Infinite scroll for default view
+window.addEventListener('scroll', () => {
+  if (isLoading || searchInput.value.trim().length >= 3) return;
+  
+  const scrolledToBottom = window.innerHeight + window.scrollY >= document.body.offsetHeight - 500;
+  if (scrolledToBottom) {
+    loadMore();
+  }
+});
+
+async function loadMore() {
+  if (isLoading) return;
+  isLoading = true;
+  
+  try {
+    const res = await fetch(\`/api/messages?offset=\${offset}&limit=50\`);
+    const data = await res.json();
+    
+    if (data.results.length > 0) {
+      const newMessages = data.results.map(r => {
+        const color = instanceColor(r.instance);
+        return \`
+<div class="msg \${r.role}">
+  <div class="msg-meta">
+    <span class="instance" style="background:\${color};color:#fff">\${escapeHtml(r.instance)}</span>
+    <span class="role \${r.role}">\${r.role}</span>
+    <span>\${formatDate(r.created_at)}</span>
+  </div>
+  <div class="msg-content">\${escapeHtml(r.content)}</div>
+</div>\`;
+      }).join('');
+      
+      resultsContainer.insertAdjacentHTML('beforeend', newMessages);
+      offset += data.results.length;
+      attachExpandHandlers();
+    }
+  } catch (err) {
+    console.error('Load more error:', err);
+  } finally {
+    isLoading = false;
+  }
+}
+</script>`;
 
   return layout('Search', html, 'search');
 }
@@ -454,7 +642,7 @@ const server = http.createServer(async (req, res) => {
       }
     }
 
-    // API endpoints (for future use)
+    // API endpoints
     if (url.pathname === '/api/search') {
       const q = url.searchParams.get('q') || '';
       const instance = url.searchParams.get('instance') || '';
@@ -463,13 +651,34 @@ const server = http.createServer(async (req, res) => {
       
       const params = [q, limit];
       let where = `to_tsvector('english', content) @@ websearch_to_tsquery('english', $1)`;
-      if (instance) { where += ` AND instance = $3`; params.push(instance); }
+      if (instance) { 
+        where += ` AND instance = $${params.length + 1}`; 
+        params.push(instance); 
+      }
       
       const { rows } = await pool.query(
-        `SELECT instance, role, content, created_at FROM ${SCHEMA}.messages
-         WHERE ${where} ORDER BY created_at DESC LIMIT $2`, params
+        `SELECT instance, role, content, created_at,
+                ts_headline('english', content, websearch_to_tsquery('english', $1),
+                  'StartSel=<mark>, StopSel=</mark>, MaxFragments=2, MaxWords=30') as headline
+         FROM ${SCHEMA}.messages
+         WHERE ${where} 
+         ORDER BY created_at DESC 
+         LIMIT $2`, params
       );
       return respondJson(res, { results: rows });
+    }
+
+    if (url.pathname === '/api/messages') {
+      const offset = parseInt(url.searchParams.get('offset') || '0');
+      const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 100);
+      
+      const { rows } = await pool.query(
+        `SELECT instance, role, content, created_at 
+         FROM ${SCHEMA}.messages
+         ORDER BY created_at DESC
+         LIMIT $1 OFFSET $2`, [limit, offset]
+      );
+      return respondJson(res, { results: rows, offset, limit });
     }
 
     // Page routes
