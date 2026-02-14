@@ -29,7 +29,10 @@ After reading TASK.md, before doing the work:
 
 1. **Read `HANDOFF.md`** — Understand current state, what happened last time, advice from previous run
 2. **Read `CONTEXT.md`** — Long-term project facts
-3. **Read `NOTES.md`** — User instructions left between runs. **Immediately wipe NOTES.md** after reading (replace with `# Notes\n`). Then act on the notes as part of your session — wire lasting knowledge into CONTEXT.md or HANDOFF.md when appropriate (could be immediately, could be at end of session, depends on the note).
+3. **Read `NOTES.md`** — Direct instructions from the user or main session (your manager). **NOTES.md is the highest-priority input.** If notes change direction, reprioritize, or override your previous plan — follow them. They supersede whatever HANDOFF.md says. Deprioritize everything else accordingly.
+   - **Immediately wipe NOTES.md** after reading (replace with `# Notes\n`).
+   - **Carry forward into HANDOFF.md**: If notes set a new direction or priority shift, reflect that in your HANDOFF.md so the next run continues on the new course (not the old one). Don't let priority changes die with the wipe.
+   - Wire lasting knowledge into CONTEXT.md when appropriate.
 4. **Optionally scan `runs/`** — If you need more historical context, check recent session logs
 5. **If task specifies a Role** — Read the role file mentioned in TASK.md
 
@@ -112,4 +115,4 @@ Filename: `YYYY-MM-DD-HHMM.md`
 4. **Don't exceed scope** — Do the task, don't start unrelated work
 5. **Always log** — Every execution should be recorded
 6. **Read `framework/docs/CRON_BEST_PRACTICES.md`** — Core principles: ship every run, harvest before planting, always have a build queue, write recovery notes
-7. **The main session is your manager** — It sees all cron reports and may leave corrections in NOTES.md. Always check NOTES.md first (step 3 above). The main session has full context you don't have.
+7. **The main session is your manager** — It sees all cron reports and may leave corrections in NOTES.md. Always check NOTES.md first (step 3 above). The main session has full context you don't have. **When NOTES.md changes your priorities, your HANDOFF.md must reflect that new direction** — otherwise the next run reverts to the old plan and the user's intervention is lost.
