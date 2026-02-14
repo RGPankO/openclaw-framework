@@ -21,14 +21,14 @@ Check for updates to the OpenClaw Framework and notify the user.
 ## Prerequisites
 
 - `auto_update: true` in user.settings.md
-- Framework installed in `workspace/framework/`
+- Framework installed in `framework/`
 - Git available
 
 ## Instructions
 
 ### 1. Check Current Version
 
-Read version from `workspace/framework/FRAMEWORK.md` or `workspace/framework/VERSION`
+Read version from `framework/FRAMEWORK.md` or `framework/VERSION`
 
 Store as: `current_version`
 
@@ -37,7 +37,7 @@ Store as: `current_version`
 **CRITICAL:** Only fetch, do NOT pull yet. Files must stay on current version until user confirms.
 
 ```bash
-cd ~/.openclaw/workspace/framework
+cd framework
 git fetch origin main
 ```
 
@@ -114,7 +114,7 @@ Reply "update framework" to apply, or "skip update" to defer.
 ### 8. Pull Update (when approved or auto-applying)
 
 ```bash
-cd ~/.openclaw/workspace/framework
+cd framework
 git pull origin main
 ```
 

@@ -121,7 +121,7 @@ Tell your OpenClaw agent:
 > "Install the OpenClaw Framework from https://github.com/RGPankO/openclaw-framework"
 
 The agent will:
-1. Clone framework to `workspace/framework/`
+1. Clone framework to `framework/` (in workspace root)
 2. Ask which features you want enabled
 3. Create USER-SETTINGS.md with your choices
 4. Create directory structure (projects/, todo/, reminders/, etc.)
@@ -167,7 +167,7 @@ workspace/
 ## Two Git Repos
 
 ### 1. Framework Repo (this one)
-- Lives in `workspace/framework/`
+- Lives in `framework/` (in workspace root)
 - Public, shared, gets updates
 - You clone it, never edit it
 

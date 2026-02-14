@@ -144,7 +144,7 @@ Single Express server in `framework/tools/server.js`:
 
 ```bash
 # Start manually
-cd ~/.openclaw/workspace/framework/tools
+cd framework/tools
 npm install  # first time only
 node server.js
 

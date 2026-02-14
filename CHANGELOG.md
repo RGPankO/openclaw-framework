@@ -144,7 +144,7 @@ All notable changes to the OpenClaw Framework.
 
 ### Architecture
 - **Two-repo model:**
-  - Framework repo → `workspace/framework/` (shared, read-only)
+  - Framework repo → `framework/` (shared, read-only)
   - User's self repo → `workspace/` root (user's own, editable)
 - User-editable files live in `workspace/`, NOT in `framework/`
 - Framework provides `.example.md` templates only
