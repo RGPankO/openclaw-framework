@@ -35,6 +35,11 @@ avatar/              # Agent's avatar image (optional)
 
 The avatar is part of the agent's identity — it travels with the soul. During setup, the user can generate or provide an avatar image. Store it in `avatar/` alongside the identity files.
 
+**To generate a new avatar:** Use the `avatar-generate` skill from the framework:
+```bash
+python3 framework/skills/avatar-generate/scripts/generate.py <identity-repo-path> --variant minimal
+```
+
 ### Why separate?
 
 If you run multiple instances (assistant, researcher, supervisor), they all share the same soul. Update SOUL.md once, pull everywhere. Same avatar, same personality, different jobs.
