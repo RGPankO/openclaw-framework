@@ -15,17 +15,34 @@ TARGETS = {
 
 
 def recolor(template: Image.Image, rgb: tuple[int, int, int]) -> Image.Image:
-    """Keep the source alpha and replace RGB."""
-    out = Image.new("RGBA", template.size, (0, 0, 0, 0))
-    src = template.load()
+    """Generate badge by thresholding non-white pixels to solid color with full alpha."""
+    # Convert to RGBA and get pixel data
+    template_rgba = template.convert("RGBA")
+    w, h = template_rgba.size
+    
+    # Define the target color
+    if rgb == (229, 57, 53, 255) or rgb == (229, 57, 53):
+        target_color = (229, 57, 53, 255)  # Red
+    elif rgb == (0, 0, 0) or rgb == (0, 0, 0, 255):
+        target_color = (0, 0, 0, 255)  # Black
+    elif rgb == (255, 255, 255) or rgb == (255, 255, 255, 255):
+        target_color = (255, 255, 255, 255)  # White
+    else:
+        target_color = (*rgb, 255)
+    
+    # Create output image
+    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    src = template_rgba.load()
     dst = out.load()
-    r, g, b = rgb
-    width, height = template.size
-    for y in range(height):
-        for x in range(width):
-            _, _, _, a = src[x, y]
-            if a:
-                dst[x, y] = (r, g, b, a)
+    
+    for y in range(h):
+        for x in range(w):
+            r, g, b, a = src[x, y]
+            # If pixel is NOT white (i.e., has color), make it opaque with target color
+            if r < 250 or g < 250 or b < 250:
+                dst[x, y] = target_color
+            # Else: keep transparent (white/transparent pixels)
+    
     return out
 
 
