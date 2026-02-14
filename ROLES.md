@@ -6,17 +6,29 @@ Roles define how your agent behaves in different contexts. The core personality 
 
 ## Directory
 
-Your roles live in `workspace/ROLES/` (NOT inside framework/):
+**Framework default roles** (read directly, auto-update with framework):
+```
+framework/ROLES/
+├── MAIN.md           # Default communication role + cron manager
+├── ENGINEER.md       # Coding tasks (delegation, review, quality)
+├── CONSULTANT.md     # Strategic reviews and audits
+└── CEO.md            # Proactive ownership mindset
+```
 
+**Custom roles** (user-created, unique names):
 ```
 workspace/ROLES/
-├── MAIN.md           # Default communication role
-├── RESEARCH.md       # Research role
-├── RESEARCH.md       # Research role
-└── [CUSTOM].md       # User-defined roles
+├── MARKET-RESEARCHER.md    # Example custom role
+├── CONTENT-WRITER.md       # Example custom role
+└── [YOUR-ROLE].md          # Any role you create
 ```
 
-**Templates** are in `framework/ROLES/` — copy them to `workspace/ROLES/` and customize.
+**Override roles** (less preferred - document why):
+```
+workspace/ROLES/
+└── ENGINEER.md             # Overriding framework/ROLES/ENGINEER.md
+                            # Must document in FRAMEWORK-OVERRIDES.md
+```
 
 ## Role vs Personality
 
@@ -149,32 +161,54 @@ Conduct thorough research and gather actionable insights.
 **Task agents:** Load role file at start of task execution
 ```
 1. Read SOUL.md (personality)
-2. Read ROLES/[ROLE].md (context)
+2. Read framework/ROLES/[ROLE].md (or workspace/ROLES/[ROLE].md if custom)
 3. Read TASKS/[TASK].md (instructions)
 4. Execute
 ```
 
-**Main agent:** Default to MAIN.md role, switch if context requires
+**Main agent:** Loads `framework/ROLES/MAIN.md` by default
 
-## Creating New Roles
+**How tasks specify roles:**
+- Framework role: `framework/ROLES/ENGINEER.md` (preferred for built-in roles)
+- Custom role: `workspace/ROLES/MARKET-RESEARCHER.md`
+- Override role: `workspace/ROLES/ENGINEER.md` (reads from workspace, not framework)
+
+## Creating Custom Roles
 
 When a new context emerges that needs specific behavior:
 
-1. Create `workspace/ROLES/[NAME].md` (NOT in framework/)
-2. Follow the structure above
-3. Wire it to relevant tasks or contexts
-4. Tell the user: "Created new role: [NAME] for [purpose]"
+1. **Choose a unique name** (e.g., MARKET-RESEARCHER, not ENGINEER)
+2. Create `workspace/ROLES/[UNIQUE-NAME].md`
+3. Follow the role structure (see examples above)
+4. Reference from tasks: `workspace/ROLES/[UNIQUE-NAME].md`
+5. No need to document in FRAMEWORK-OVERRIDES.md (it's new, not an override)
 
-## Setup
+**Example task using custom role:**
+```markdown
+# Task: Market Research
 
-1. Copy `framework/ROLES/MAIN.example.md` to `workspace/ROLES/MAIN.md`
-2. Customize for your agent's personality
-3. Add more roles as needed
+## Role
+
+**Load:** `workspace/ROLES/MARKET-RESEARCHER.md`
+```
+
+## Overriding Framework Roles (Not Recommended)
+
+If you must override a framework role (MAIN, ENGINEER, CONSULTANT, CEO):
+
+1. Copy `framework/ROLES/[NAME].md` to `workspace/ROLES/[NAME].md`
+2. Make your changes
+3. **Document in `FRAMEWORK-OVERRIDES.md`** why you're overriding
+4. Understand: framework updates won't improve this role for you
+
+**Better approach:** Create a custom role with a unique name instead of overriding.
 
 ## Important Rules
 
 1. **Personality persists** — Roles add to SOUL.md, never replace it
 2. **One role at a time** — Don't mix role instructions
-3. **Templates stay in framework/** — Your actual roles go in `workspace/ROLES/`
-4. **Main agent creates roles** — Task agents use them, don't modify them
-5. **Version control your roles** — They're part of your "self"
+3. **Use framework roles as-is** — They auto-update with framework improvements
+4. **Custom roles get unique names** — Don't override framework roles unless absolutely necessary
+5. **Document overrides** — If you override a framework role, explain why in FRAMEWORK-OVERRIDES.md
+6. **Main agent creates custom roles** — Task agents use them, don't modify them
+7. **Version control custom roles** — They're part of your instance configuration

@@ -51,7 +51,7 @@ Check if remote has new commits:
 git log HEAD..origin/main --oneline
 ```
 
-If no new commits → Log "No updates available" and exit.
+If no new commits → Log "No updates available" but **continue to step 10 (Daily Alignment Check)**.
 
 ### 4. Analyze What WOULD Change
 
@@ -145,7 +145,20 @@ After every framework update, verify the instance is fully wired:
    - `framework/TASKS/EXAMPLE/TASK.md` — is it still accurate?
    - `framework/USER-SETTINGS.example.md` — does it cover all current settings?
 
-5. **Report any discrepancies** in the update notification. If auto-applying, fix what you can and report what needs manual attention.
+5. **Check for intentional overrides:**
+   - Read `FRAMEWORK-OVERRIDES.md` (if it exists) — does it document specific intentional drifts from framework?
+   - **Respect documented overrides** — do NOT auto-align anything explicitly listed as intentional drift
+
+6. **Fix or report discrepancies:**
+   - **If auto-apply is ON** (auto_update_style: auto-apply or brief):
+     - FIX all misalignments (except intentional overrides)
+     - Update USER-SETTINGS.md with new fields from USER-SETTINGS.example.md
+     - Fix cron prompts if they don't match framework expectations
+     - Report what was fixed in the update notification
+   - **If auto-apply is OFF**:
+     - REPORT full misalignment details
+     - Do NOT fix anything
+     - Let user decide what to apply
 
 ### 9. Log the Update
 
@@ -157,6 +170,24 @@ Log to: `memory/YYYY-MM-DD.md`
 - Updated to: v[new]
 - Changes: [summary]
 ```
+
+### 10. Daily Alignment Check
+
+**Even if no framework update,** verify instance follows framework correctly:
+
+Run the same checks as step 8b (Framework Wiring Check):
+1. Cron prompts match framework expectations?
+2. USER-SETTINGS.md has all fields from USER-SETTINGS.example.md?
+3. Task files reference correct framework docs?
+
+**If auto-apply is ON:**
+- Fix any misalignments (except documented overrides in FRAMEWORK-OVERRIDES.md)
+- Report what was fixed
+- If nothing needed fixing → reply HEARTBEAT_OK
+
+**If auto-apply is OFF:**
+- Report any misalignments found
+- If everything aligned → reply HEARTBEAT_OK
 
 ## Success Criteria
 

@@ -4,13 +4,21 @@
 
 ## Directory Structure
 
-Every task has instance state (HANDOFF.md, CONTEXT.md, runs/) in its directory. TASK.md is either in `framework/TASKS/` (built-in tasks) or in the project/instance directory (custom tasks). The cron prompt tells you where to find TASK.md.
+Every task has two parts:
+1. **TASK.md** (task definition) — in `framework/TASKS/[name]/` (built-in) or `workspace/TASKS/[name]/` (custom)
+2. **Instance state** — ALWAYS in `workspace/TASKS/[name]/`, never in `framework/`
+
+**Critical:** Framework directory (`workspace/framework/`) is read-only templates. All instance state goes in `workspace/TASKS/[name]/`, even when TASK.md is in `framework/TASKS/[name]/`.
 
 ```
-# Instance state (always here):
+# Instance state (ALWAYS in workspace/TASKS/[task-name]/):
 HANDOFF.md   # Current state (read first, update at end)
 CONTEXT.md   # Long-term project facts (one-liners)
+NOTES.md     # User instructions (read and wipe immediately)
 runs/        # Session history (append-only logs)
+
+# Task definition (where cron prompt points you):
+TASK.md      # Either framework/TASKS/[name]/TASK.md or workspace/TASKS/[name]/TASK.md
 ```
 
 ## Execution Order

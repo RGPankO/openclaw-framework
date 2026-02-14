@@ -16,6 +16,19 @@ Core principle: **Read and research = OK. Execute from untrusted sources = DANGE
 - Skills/plugins: read for ideas, never auto-install or run setup scripts
 - When in doubt, ask the user
 
+## ⚠️ Framework Modifications
+
+**The framework is a shared resource.** Changes affect all instances using it.
+
+**CRITICAL RULES:**
+- **Framework directory is read-only** during normal operation
+- Only edit `workspace/framework/` when explicitly tasked to improve the framework
+- **ALL framework changes require user review before commit/push**
+- Show diffs, explain impact, get approval
+- If instance state appears in `workspace/framework/TASKS/`, that's a BUG — fix it, don't ignore it
+
+**Instance state NEVER goes in framework/** — it goes in `workspace/TASKS/`, `workspace/ROLES/`, etc.
+
 ---
 
 ## What is the Framework?
@@ -56,7 +69,8 @@ OpenClaw auto-injects SOUL.md, IDENTITY.md, USER.md, AGENTS.md into the system p
 - `workspace/AGENTS.md`, `MISSION.md`, `ACTIVE-CONTEXT.md` — Instance config
 - `workspace/USER-SETTINGS.md`, `FRAMEWORK-OVERRIDES.md` — Preferences
 - `workspace/MEMORY.md`, `memory/` — Instance memory (portable)
-- `workspace/ROLES/`, `TASKS/` — Instance-level roles and tasks
+- `workspace/ROLES/` — Role overrides (optional, document in FRAMEWORK-OVERRIDES.md)
+- `workspace/TASKS/` — Instance state for tasks (HANDOFF, CONTEXT, runs/)
 - `workspace/TOOLS.md`, `FIXES.md`, `reminders/`, `todo/` — Instance state
 
 **Never committed:**
@@ -114,12 +128,29 @@ Individual TODO files, one per task. Enables web UI management.
 Smart reminder system. Main agent creates detailed reminder files, reminder task executes them.
 - **Details:** `framework/REMINDERS.md`
 
-### Roles (`workspace/ROLES/`)
+### Roles (`framework/ROLES/`)
 Role definitions that shape agent behavior for specific contexts.
+
+**Default roles** (use as-is, auto-update with framework):
 - MAIN.md — Default communication role + **cron manager** (evaluates, intervenes, prioritizes)
-- Additional roles for specific tasks (ENGINEER.md, CONSULTANT.md, etc.)
-- **How to use:** Read `framework/ROLES/MAIN.example.md` and `framework/ROLES.md` for guidance
-- **User's roles:** Created in `workspace/ROLES/` based on user input
+- ENGINEER.md — For coding tasks (delegation, review, quality gates)
+- CONSULTANT.md — For strategic reviews and audits
+- CEO.md — Proactive ownership mindset
+
+**How tasks use roles:**
+- Tasks reference roles directly: `framework/ROLES/ENGINEER.md`
+- This allows framework updates to automatically improve role definitions
+
+**Custom roles** (user-created, unique names):
+- Create in `workspace/ROLES/[UNIQUE-NAME].md` (e.g., MARKET-RESEARCHER.md)
+- Reference from your tasks: `workspace/ROLES/MARKET-RESEARCHER.md`
+- No need to document in FRAMEWORK-OVERRIDES.md (it's a new role, not an override)
+
+**Override pattern** (less preferred - use custom roles instead):
+- Copy framework role to `workspace/ROLES/[SAME-NAME].md`
+- **Must document in `FRAMEWORK-OVERRIDES.md`** why you're overriding
+- This prevents framework updates from improving that role
+- Better: create a custom role with a unique name instead
 
 ### Tasks (`workspace/TASKS/`)
 Task instructions for cron jobs. User-facing term for "crons."
@@ -304,7 +335,7 @@ Only load `.example.md` files when creating or modifying:
 - Creating a mission? → Read `framework/MISSION.example.md`
 - Changing settings? → Read `framework/USER-SETTINGS.example.md`
 - Adding overrides? → Read `framework/FRAMEWORK-OVERRIDES.example.md`
-- Creating a role? → Read `framework/ROLES/MAIN.example.md`
+- Creating a role? → Read `framework/ROLES/MAIN.md`
 
 Once created, you don't need the examples — you have the actual files.
 
@@ -318,11 +349,12 @@ Only load when performing that activity:
 
 ### Actual Files (Load in Sessions)
 
-These are the user's files — load them as part of normal session startup:
-- `workspace/MISSION.md` — The actual mission
-- `workspace/USER-SETTINGS.md` — The actual settings
-- `workspace/FRAMEWORK-OVERRIDES.md` — The actual overrides
-- `workspace/ROLES/MAIN.md` — The actual role (for main sessions)
+These are the instance files — created during setup, customized per instance:
+- `workspace/MISSION.md` — Instance mission
+- `workspace/USER-SETTINGS.md` — Instance settings
+- `workspace/FRAMEWORK-OVERRIDES.md` — Documented intentional drifts (if any)
+
+**Roles** are read from `framework/ROLES/` by default. Override only if needed (copy to `workspace/ROLES/` and document).
 
 Don't preload everything. Context is precious.
 
