@@ -20,8 +20,12 @@ Show the user the original avatar or describe it, then ask: "Would you like blac
 
 ## Variants
 
-- **bot** -- Red circle ring (60px at 1024) + "BOT" badge (bottom-right)
+- **bot** -- Red circle ring (60px at 1024) + optional "BOT" badge (bottom-right)
 - **premium** -- Gold diamond "PREMIUM" badge (38% width, bottom-right, 150px inward)
+
+## Options
+
+- **--no-label** -- Add circle ring only, no BOT text
 
 ## Badge Colors (bot variant only)
 
@@ -35,6 +39,7 @@ Show the user the original avatar or describe it, then ask: "Would you like blac
 python3 scripts/stamp.py <input> <output> --variant bot
 python3 scripts/stamp.py <input> <output> --variant bot --badge-color black
 python3 scripts/stamp.py <input> <output> --variant bot --badge-color white
+python3 scripts/stamp.py <input> <output> --variant bot --no-label
 python3 scripts/stamp.py <input> <output> --variant premium
 python3 scripts/stamp.py <input> <output> --variant bot --size 512
 ```

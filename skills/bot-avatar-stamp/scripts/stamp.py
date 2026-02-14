@@ -2,18 +2,21 @@
 """Stamp an avatar with bot or premium overlays.
 
 Usage:
-  stamp.py <input> <output> [--variant bot|premium] [--size 1024] [--badge-color red|black|white]
-  stamp.py <input> <output> --variant bot --badge-color black
+  stamp.py <input> <output> [--variant bot|premium] [--size 1024] [--badge-color red|black|white] [--no-label]
+  stamp.py <input> <output> --variant bot --badge-color black --no-label
   stamp.py <input> <output> --variant premium
 
 Variants:
-  bot      - Red circle ring + "BOT" badge (bottom-right)
+  bot      - Red circle ring + optional "BOT" badge (bottom-right)
   premium  - Gold diamond "PREMIUM" badge (bottom-right)
 
 Badge colors (bot variant only):
   red      - Red "BOT" text (default)
   black    - Black "BOT" text
   white    - White "BOT" text
+
+Options:
+  --no-label  - Add circle ring only, no BOT text
 """
 
 import argparse
@@ -50,14 +53,18 @@ def recolor_badge_from_template(template: Image.Image, color: tuple[int, int, in
     return recolored
 
 
-def stamp_bot(avatar: Image.Image, size: int, badge_color: str = "red") -> Image.Image:
-    """Add red circle ring and BOT badge."""
+def stamp_bot(avatar: Image.Image, size: int, badge_color: str = "red", no_label: bool = False) -> Image.Image:
+    """Add red circle ring and optional BOT badge."""
     # Red circle ring
     overlay = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
     ring_width = max(int(size * 0.059), 4)  # ~60px at 1024
     draw.ellipse([0, 0, size - 1, size - 1], outline=(229, 57, 53, 255), width=ring_width)
     avatar = Image.alpha_composite(avatar, overlay)
+
+    # Skip text badge if --no-label
+    if no_label:
+        return avatar
 
     # BOT badge - check for pre-made badge first
     badge_filename = f"bot-badge-{badge_color}.png"
@@ -137,12 +144,13 @@ def main():
     parser.add_argument("--variant", choices=["bot", "premium"], default="bot", help="Overlay variant (default: bot)")
     parser.add_argument("--size", type=int, default=1024, help="Output size in pixels (default: 1024)")
     parser.add_argument("--badge-color", choices=["red", "black", "white"], default="red", help="BOT badge color (default: red, bot variant only)")
+    parser.add_argument("--no-label", action="store_true", help="Only add circle ring, no BOT text")
     args = parser.parse_args()
 
     avatar = Image.open(args.input).convert("RGBA").resize((args.size, args.size), Image.LANCZOS)
 
     if args.variant == "bot":
-        avatar = stamp_bot(avatar, args.size, args.badge_color)
+        avatar = stamp_bot(avatar, args.size, args.badge_color, args.no_label)
     elif args.variant == "premium":
         avatar = stamp_premium(avatar, args.size)
 

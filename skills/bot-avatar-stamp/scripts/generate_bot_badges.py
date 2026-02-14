@@ -23,7 +23,7 @@ def recolor(template: Image.Image, rgb: tuple[int, int, int]) -> Image.Image:
     draw = ImageDraw.Draw(temp)
     
     try:
-        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 400)
+        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 650)
     except:
         font = ImageFont.load_default()
     
