@@ -29,6 +29,12 @@ Then execute the task instructions.
 
 ## After Completing
 
+Follow the task's own "Before Ending" steps (if any), then **always** follow the Universal Rules below.
+
+> ⚠️ **Universal Rules are mandatory.** Even if your TASK.md has its own "Before Ending" section, these rules still apply on top. TASK.md steps are additive, not a replacement.
+
+### Universal Rules (apply to ALL tasks, every run, no exceptions)
+
 1. **Update `HANDOFF.md`** with:
    - Current state and advice for next run
    - **REMOVE completed tasks entirely** — done = delete the line, don't strikethrough or mark ✅
@@ -50,7 +56,7 @@ Then execute the task instructions.
    - Stage and commit with a descriptive message (see `framework/PROJECTS.md` for branch workflow)
    - Push if remote is configured
 
-5. **Send summary to user** — Send your session summary (what you did, key findings, next steps) directly via the message tool. Check `USER-SETTINGS.md` for `delivery_channel` and `delivery_target`. This is required — cron announce delivery is unreliable, so always send directly.
+5. **Send summary to user** — Send your session summary (what you did, key findings, next steps) directly via the message tool. Check `USER-SETTINGS.md` for `delivery_channel` and `delivery_target`. This is **required every run** — cron announce delivery is unreliable, so always send directly. If USER-SETTINGS.md specifies `delivery_channel` and `delivery_target`, use those.
 
 ## HANDOFF.md Format
 

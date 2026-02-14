@@ -84,6 +84,8 @@ Also read `framework/docs/CRON_BEST_PRACTICES.md` for operational principles.
 
 5. **Send summary to user** — Before ending, send your session summary (what you did, key findings, next steps) directly via the message tool. Check `USER-SETTINGS.md` for delivery channel and target. This is required — cron announce delivery is unreliable.
 
+> ⚠️ After these steps, the **Universal Rules** in `framework/TASKS/README.md` also apply. Those are mandatory every run and cannot be skipped even if your TASK.md doesn't list them.
+
 ## Success Criteria
 
 <!-- How to know the task completed successfully -->
