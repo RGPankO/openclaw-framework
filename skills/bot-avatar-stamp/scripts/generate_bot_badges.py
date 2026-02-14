@@ -3,7 +3,7 @@
 
 from pathlib import Path
 
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 
 ASSETS_DIR = Path(__file__).parent.parent / "assets"
 RED_BADGE = ASSETS_DIR / "bot-badge-red.png"
@@ -15,33 +15,29 @@ TARGETS = {
 
 
 def recolor(template: Image.Image, rgb: tuple[int, int, int]) -> Image.Image:
-    """Generate badge by thresholding non-white pixels to solid color with full alpha."""
-    # Convert to RGBA and get pixel data
+    """Generate badge by extracting text mask from template and applying color."""
+    # Convert to RGBA
     template_rgba = template.convert("RGBA")
     w, h = template_rgba.size
     
-    # Define the target color
-    if rgb == (229, 57, 53, 255) or rgb == (229, 57, 53):
-        target_color = (229, 57, 53, 255)  # Red
-    elif rgb == (0, 0, 0) or rgb == (0, 0, 0, 255):
-        target_color = (0, 0, 0, 255)  # Black
-    elif rgb == (255, 255, 255) or rgb == (255, 255, 255, 255):
-        target_color = (255, 255, 255, 255)  # White
-    else:
-        target_color = (*rgb, 255)
+    # Create output: white background (transparent), text opaque with color
+    out = Image.new("RGBA", (w, h), (255, 255, 255, 0))  # White, transparent
+    draw = ImageDraw.Draw(out)
     
-    # Create output image
-    out = Image.new("RGBA", (w, h), (0, 0, 0, 0))
-    src = template_rgba.load()
-    dst = out.load()
+    # Draw the text in the target color
+    # Try to use a good font
+    font_size = 400
+    try:
+        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", font_size)
+    except:
+        font = ImageFont.load_default()
     
-    for y in range(h):
-        for x in range(w):
-            r, g, b, a = src[x, y]
-            # If pixel is NOT white (i.e., has color), make it opaque with target color
-            if r < 250 or g < 250 or b < 250:
-                dst[x, y] = target_color
-            # Else: keep transparent (white/transparent pixels)
+    # Get RGB color
+    r, g, b = rgb[:3]
+    color = (r, g, b, 255)
+    
+    # Draw text centered
+    draw.text((w//2, h//2), "BOT", fill=color, font=font, anchor="mm")
     
     return out
 
