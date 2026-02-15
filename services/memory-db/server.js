@@ -155,8 +155,10 @@ mark{background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;padding:2px 5
 function layout(title, content, activeTab = '') {
   const tabs = [
     { id: 'search', label: '🔍 Search', href: '/' },
+    { id: 'kanban', label: '📋 Kanban', href: '/kanban' },
+    { id: 'timeline', label: '⏱️ Timeline', href: '/timeline' },
     { id: 'crons', label: '⚙️ Crons', href: '/crons' },
-    { id: 'sessions', label: '📋 Sessions', href: '/sessions' },
+    { id: 'sessions', label: '💬 Sessions', href: '/sessions' },
     { id: 'stats', label: '📊 Stats', href: '/stats' },
   ];
   const tabsHtml = tabs.map(t => 
@@ -697,6 +699,270 @@ async function loadMore() {
   return layout('Search', html, 'search');
 }
 
+async function handleTimeline(url) {
+  const viewMode = url.searchParams.get('view') || 'day'; // hour, day, week
+  const filterInstance = url.searchParams.get('instance') || '';
+  
+  // Calculate time range based on view mode
+  const now = new Date();
+  let startTime, endTime, bucketSize, bucketLabel;
+  
+  if (viewMode === 'hour') {
+    // Last 24 hours, 1-hour buckets
+    startTime = new Date(now - 24 * 60 * 60 * 1000);
+    endTime = now;
+    bucketSize = 60 * 60 * 1000; // 1 hour in ms
+    bucketLabel = 'hour';
+  } else if (viewMode === 'week') {
+    // Last 7 days, 1-day buckets
+    startTime = new Date(now - 7 * 24 * 60 * 60 * 1000);
+    endTime = now;
+    bucketSize = 24 * 60 * 60 * 1000; // 1 day in ms
+    bucketLabel = 'day';
+  } else {
+    // Default: last 48 hours, 2-hour buckets
+    startTime = new Date(now - 48 * 60 * 60 * 1000);
+    endTime = now;
+    bucketSize = 2 * 60 * 60 * 1000; // 2 hours in ms
+    bucketLabel = '2hr';
+  }
+  
+  // Get all instances
+  const { rows: instances } = await pool.query(
+    `SELECT DISTINCT instance FROM ${SCHEMA}.sessions ORDER BY instance`
+  );
+  
+  const instanceFilter = filterInstance || instances.map(i => i.instance);
+  const instanceArray = Array.isArray(instanceFilter) ? instanceFilter : [instanceFilter];
+  
+  // Get session activity in time range
+  const { rows: sessions } = await pool.query(
+    `SELECT s.instance, s.session_id, s.started_at, s.source, s.model,
+            MIN(m.created_at) as first_msg,
+            MAX(m.created_at) as last_msg,
+            COUNT(m.id)::int as msg_count
+     FROM ${SCHEMA}.sessions s
+     LEFT JOIN ${SCHEMA}.messages m ON s.instance = m.instance AND s.session_id = m.session_id
+     WHERE s.started_at >= $1 AND s.started_at <= $2
+     ${filterInstance ? 'AND s.instance = $3' : ''}
+     GROUP BY s.instance, s.session_id, s.started_at, s.source, s.model
+     ORDER BY s.started_at DESC`,
+    filterInstance ? [startTime, endTime, filterInstance] : [startTime, endTime]
+  );
+  
+  // Build timeline data: buckets x instances
+  const numBuckets = Math.ceil((endTime - startTime) / bucketSize);
+  const timelineData = [];
+  
+  for (let i = 0; i < numBuckets; i++) {
+    const bucketStart = new Date(startTime.getTime() + i * bucketSize);
+    const bucketEnd = new Date(bucketStart.getTime() + bucketSize);
+    
+    const bucket = {
+      start: bucketStart,
+      end: bucketEnd,
+      label: formatTimeLabel(bucketStart, viewMode),
+      instances: {}
+    };
+    
+    instances.forEach(inst => {
+      const sessionsInBucket = sessions.filter(s => {
+        const sessionStart = new Date(s.first_msg || s.started_at);
+        const sessionEnd = new Date(s.last_msg || s.started_at);
+        return s.instance === inst.instance &&
+               sessionStart < bucketEnd && sessionEnd >= bucketStart;
+      });
+      
+      bucket.instances[inst.instance] = {
+        count: sessionsInBucket.length,
+        sessions: sessionsInBucket,
+        messages: sessionsInBucket.reduce((sum, s) => sum + s.msg_count, 0)
+      };
+    });
+    
+    timelineData.push(bucket);
+  }
+  
+  // Build instance filter dropdown
+  const instanceOptions = instances.map(i =>
+    `<option value="${i.instance}" ${filterInstance === i.instance ? 'selected' : ''}>${i.instance}</option>`
+  ).join('');
+  
+  // Build timeline visualization
+  const timelineHTML = timelineData.map((bucket, idx) => {
+    const bars = instances.map(inst => {
+      const data = bucket.instances[inst.instance];
+      const height = Math.min(data.messages * 2, 150); // Scale: 2px per message, max 150px
+      const color = instanceColor(inst.instance);
+      const opacity = data.count > 0 ? 0.8 : 0.1;
+      
+      const tooltipContent = data.count > 0 ?
+        `${inst.instance}: ${data.count} session${data.count !== 1 ? 's' : ''}, ${data.messages} msg${data.messages !== 1 ? 's' : ''}` :
+        `${inst.instance}: no activity`;
+      
+      return `
+<div class="timeline-bar" 
+     data-instance="${escapeHtml(inst.instance)}" 
+     data-count="${data.count}"
+     data-messages="${data.messages}"
+     style="height:${height}px;background:${color};opacity:${opacity}"
+     title="${tooltipContent}"
+     onclick="showBucketSessions(${idx})">
+</div>`;
+    }).join('');
+    
+    return `
+<div class="timeline-bucket" data-bucket-idx="${idx}">
+  <div class="timeline-bars">${bars}</div>
+  <div class="timeline-label">${bucket.label}</div>
+</div>`;
+  }).join('');
+  
+  // Build instance legend
+  const legend = instances.map(inst => {
+    const color = instanceColor(inst.instance);
+    const totalSessions = sessions.filter(s => s.instance === inst.instance).length;
+    const totalMessages = sessions.filter(s => s.instance === inst.instance).reduce((sum, s) => sum + s.msg_count, 0);
+    
+    return `
+<div class="legend-item" onclick="filterByInstance('${inst.instance}')">
+  <div class="legend-color" style="background:${color}"></div>
+  <div class="legend-label">${escapeHtml(inst.instance)}</div>
+  <div class="legend-stats">${totalSessions} sessions, ${totalMessages} msgs</div>
+</div>`;
+  }).join('');
+  
+  const sessionsJson = JSON.stringify(timelineData);
+  
+  const html = `
+<div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+  <h2 style="margin:0">Session Timeline</h2>
+  <div style="display:flex;gap:8px;flex-wrap:wrap">
+    <select id="viewMode" onchange="changeView(this.value)" style="padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e0e0e0;font-size:13px">
+      <option value="hour" ${viewMode === 'hour' ? 'selected' : ''}>Last 24 Hours</option>
+      <option value="day" ${viewMode === 'day' ? 'selected' : ''}>Last 48 Hours</option>
+      <option value="week" ${viewMode === 'week' ? 'selected' : ''}>Last 7 Days</option>
+    </select>
+    <select id="instanceFilter" onchange="filterByInstance(this.value)" style="padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e0e0e0;font-size:13px">
+      <option value="">All Instances</option>
+      ${instanceOptions}
+    </select>
+  </div>
+</div>
+
+<div class="timeline-legend">${legend}</div>
+
+<div class="timeline-container">
+  <div class="timeline-grid">${timelineHTML}</div>
+</div>
+
+<div id="sessionDetails" class="session-details" style="display:none">
+  <h3 style="margin-bottom:16px">Sessions in Time Window</h3>
+  <div id="sessionDetailsList"></div>
+</div>
+
+<style>
+.timeline-container{background:rgba(255,255,255,0.06);border-radius:12px;padding:24px;margin:24px 0;overflow-x:auto}
+.timeline-grid{display:flex;gap:4px;align-items:flex-end;min-height:200px}
+.timeline-bucket{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:60px}
+.timeline-bars{display:flex;gap:2px;align-items:flex-end;min-height:150px}
+.timeline-bar{width:12px;border-radius:4px 4px 0 0;transition:all .2s;cursor:pointer;position:relative}
+.timeline-bar:hover{opacity:1!important;transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,0.4)}
+.timeline-label{font-size:10px;color:#6b7280;text-align:center;writing-mode:horizontal-tb;transform:rotate(-45deg);transform-origin:center;white-space:nowrap;margin-top:8px}
+.timeline-legend{display:flex;gap:16px;flex-wrap:wrap;margin:16px 0;padding:16px;background:rgba(255,255,255,0.04);border-radius:8px}
+.legend-item{display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 12px;border-radius:6px;transition:all .2s}
+.legend-item:hover{background:rgba(255,255,255,0.08)}
+.legend-color{width:16px;height:16px;border-radius:4px}
+.legend-label{font-size:13px;font-weight:600;color:#e0e0e0}
+.legend-stats{font-size:11px;color:#6b7280}
+.session-details{background:rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin-top:24px}
+.session-item{padding:12px;margin-bottom:8px;background:rgba(255,255,255,0.06);border-radius:8px;border-left:3px solid;font-size:13px;transition:all .2s;cursor:pointer}
+.session-item:hover{background:rgba(255,255,255,0.1);transform:translateY(-1px)}
+.session-meta{font-size:11px;color:#9ca3af;margin-top:4px}
+</style>
+
+<script>
+const timelineData = ${sessionsJson};
+
+function changeView(mode) {
+  window.location.href = '/timeline?view=' + mode + (document.getElementById('instanceFilter').value ? '&instance=' + document.getElementById('instanceFilter').value : '');
+}
+
+function filterByInstance(instance) {
+  window.location.href = '/timeline?view=${viewMode}' + (instance ? '&instance=' + instance : '');
+}
+
+function showBucketSessions(bucketIdx) {
+  const bucket = timelineData[bucketIdx];
+  const detailsDiv = document.getElementById('sessionDetails');
+  const listDiv = document.getElementById('sessionDetailsList');
+  
+  // Collect all sessions from this bucket
+  let allSessions = [];
+  Object.keys(bucket.instances).forEach(inst => {
+    bucket.instances[inst].sessions.forEach(s => {
+      allSessions.push(s);
+    });
+  });
+  
+  if (allSessions.length === 0) {
+    listDiv.innerHTML = '<div class="empty">No sessions in this time window</div>';
+    detailsDiv.style.display = 'block';
+    return;
+  }
+  
+  allSessions.sort((a, b) => new Date(b.started_at) - new Date(a.started_at));
+  
+  listDiv.innerHTML = allSessions.map(s => {
+    const color = instanceColor(s.instance);
+    return \`
+<div class="session-item" style="border-left-color:\${color}" onclick="location.href='/session?id=\${s.session_id}&instance=\${s.instance}'">
+  <div><strong>\${escapeHtml(s.instance)}</strong> / \${s.session_id.slice(0, 8)}...</div>
+  <div class="session-meta">\${s.msg_count} messages • \${formatDate(s.started_at)} → \${formatDate(s.last_msg)}</div>
+  <div class="session-meta">Source: \${s.source || '—'} • Model: \${s.model || '—'}</div>
+</div>\`;
+  }).join('');
+  
+  detailsDiv.style.display = 'block';
+  detailsDiv.scrollIntoView({ behavior: 'smooth' });
+}
+
+function escapeHtml(s) {
+  if (!s) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleString('en-GB', { timeZone: 'Europe/Sofia', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
+
+function instanceColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return \`hsl(\${hue}, 70%, 45%)\`;
+}
+</script>`;
+  
+  return layout('Timeline', html, 'timeline');
+}
+
+function formatTimeLabel(date, mode) {
+  const opts = { timeZone: 'Europe/Sofia' };
+  if (mode === 'hour') {
+    return date.toLocaleString('en-GB', { ...opts, hour: '2-digit', minute: '2-digit' });
+  } else if (mode === 'week') {
+    return date.toLocaleDateString('en-GB', { ...opts, month: 'short', day: 'numeric' });
+  } else {
+    return date.toLocaleString('en-GB', { ...opts, month: 'short', day: 'numeric', hour: '2-digit' });
+  }
+}
+
 async function handleCrons(url) {
   const page = parseInt(url.searchParams.get('page') || '1');
   const instance = url.searchParams.get('instance') || '';
@@ -860,6 +1126,298 @@ async function handleStats() {
   return layout('Stats', html, 'stats');
 }
 
+async function handleKanban(url) {
+  const boardId = url.searchParams.get('board');
+  
+  if (boardId) {
+    // Show specific board with replay UI
+    const { rows: [board] } = await pool.query(
+      `SELECT id, instance, cron_name, name, created_at 
+       FROM ${SCHEMA}.kanban_boards WHERE id = $1`, [boardId]
+    );
+    
+    if (!board) {
+      return layout('Kanban', '<div class="empty">Board not found</div>');
+    }
+    
+    // Get all events for this board
+    const { rows: events } = await pool.query(
+      `SELECT e.id, e.item_id, e.event_type, e.data, e.created_by, e.created_at,
+              i.title as item_title
+       FROM ${SCHEMA}.kanban_events e
+       LEFT JOIN ${SCHEMA}.kanban_items i ON e.item_id = i.id
+       WHERE e.board_id = $1
+       ORDER BY e.created_at ASC`, [boardId]
+    );
+    
+    // Get current state of items
+    const { rows: items } = await pool.query(
+      `SELECT id, title, current_status, priority, created_at, updated_at
+       FROM ${SCHEMA}.kanban_items
+       WHERE board_id = $1
+       ORDER BY priority DESC, created_at DESC`, [boardId]
+    );
+    
+    const itemsJson = JSON.stringify(items);
+    const eventsJson = JSON.stringify(events);
+    
+    const html = `
+<div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center">
+  <div>
+    <a href="/kanban" style="color:#818cf8;font-size:14px">← Back to boards</a>
+    <h2 style="margin:12px 0 4px">${escapeHtml(board.name)}</h2>
+    <p style="color:#6b7280;font-size:13px">${escapeHtml(board.instance)} / ${escapeHtml(board.cron_name)}</p>
+  </div>
+  <div style="color:#6b7280;font-size:13px">
+    ${items.length} item${items.length !== 1 ? 's' : ''} • ${events.length} event${events.length !== 1 ? 's' : ''}
+  </div>
+</div>
+
+<div id="kanbanBoard" class="kanban-board">
+  <div class="kanban-column" data-status="backlog">
+    <h3>Backlog</h3>
+    <div class="kanban-cards" id="backlog"></div>
+  </div>
+  <div class="kanban-column" data-status="in_progress">
+    <h3>In Progress</h3>
+    <div class="kanban-cards" id="in_progress"></div>
+  </div>
+  <div class="kanban-column" data-status="review">
+    <h3>Review</h3>
+    <div class="kanban-cards" id="review"></div>
+  </div>
+  <div class="kanban-column" data-status="done">
+    <h3>Done</h3>
+    <div class="kanban-cards" id="done"></div>
+  </div>
+</div>
+
+${events.length > 0 ? `
+<div class="timeline-controls">
+  <button id="playBtn" class="timeline-btn">▶ Play</button>
+  <button id="stepBackBtn" class="timeline-btn">◀ Step</button>
+  <button id="stepFwdBtn" class="timeline-btn">Step ▶</button>
+  <button id="resetBtn" class="timeline-btn">↺ Reset</button>
+  <div class="timeline-speed">
+    <label>Speed:</label>
+    <select id="speedSelect">
+      <option value="100">0.1s</option>
+      <option value="500" selected>0.5s</option>
+      <option value="1000">1s</option>
+      <option value="2000">2s</option>
+      <option value="5000">5s</option>
+    </select>
+  </div>
+  <div class="timeline-scrubber">
+    <input type="range" id="timelineScrubber" min="0" max="${events.length}" value="0" step="1">
+    <div id="timelineLabel">Event <span id="eventIdx">0</span> / ${events.length}</div>
+  </div>
+</div>
+
+<div class="event-log" id="eventLog"></div>
+` : '<div class="empty" style="margin-top:24px">No events yet</div>'}
+
+<style>
+.kanban-board{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:24px 0}
+.kanban-column{background:rgba(255,255,255,0.06);border-radius:12px;padding:16px;min-height:400px}
+.kanban-column h3{margin:0 0 12px;font-size:14px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.5px}
+.kanban-cards{display:flex;flex-direction:column;gap:8px}
+.kanban-card{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:12px;font-size:13px;transition:all .2s;cursor:pointer}
+.kanban-card:hover{background:rgba(255,255,255,0.12);transform:translateY(-1px)}
+.kanban-card.priority-high{border-left:3px solid #ef4444}
+.kanban-card.priority-medium{border-left:3px solid #f59e0b}
+.kanban-card.priority-low{border-left:3px solid #10b981}
+.kanban-card-title{font-weight:600;margin-bottom:4px}
+.kanban-card-meta{font-size:11px;color:#6b7280}
+.timeline-controls{background:rgba(255,255,255,0.06);border-radius:12px;padding:20px;margin:24px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.timeline-btn{padding:10px 20px;background:linear-gradient(135deg,#7c3aed,#6366f1);border:none;border-radius:8px;color:#fff;font-size:14px;cursor:pointer;font-weight:600;transition:all .2s}
+.timeline-btn:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,58,237,0.4)}
+.timeline-btn:disabled{opacity:0.4;cursor:not-allowed}
+.timeline-speed{display:flex;align-items:center;gap:8px}
+.timeline-speed label{color:#9ca3af;font-size:13px}
+.timeline-speed select{padding:8px 12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e0e0e0;font-size:13px}
+.timeline-scrubber{flex:1;display:flex;flex-direction:column;gap:4px}
+.timeline-scrubber input{width:100%;height:6px;border-radius:3px;background:rgba(255,255,255,0.1);outline:none;-webkit-appearance:none;appearance:none}
+.timeline-scrubber input::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:16px;height:16px;border-radius:50%;background:#7c3aed;cursor:pointer}
+.timeline-scrubber input::-moz-range-thumb{width:16px;height:16px;border-radius:50%;background:#7c3aed;cursor:pointer;border:none}
+#timelineLabel{color:#9ca3af;font-size:12px;text-align:center}
+#eventIdx{color:#7c3aed;font-weight:600}
+.event-log{background:rgba(255,255,255,0.06);border-radius:12px;padding:16px;max-height:300px;overflow-y:auto}
+.event-log-item{padding:10px;margin-bottom:8px;background:rgba(255,255,255,0.04);border-radius:6px;font-size:12px;border-left:3px solid #6366f1}
+.event-log-item.current{border-left-color:#7c3aed;background:rgba(124,58,237,0.1)}
+.event-log-time{color:#6b7280;font-size:11px;margin-bottom:4px}
+.event-log-desc{color:#d1d5db}
+@keyframes cardAppear{from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
+@keyframes cardMove{0%,100%{transform:translateX(0)}50%{transform:translateX(20px)}}
+.kanban-card.animate-appear{animation:cardAppear .3s ease}
+.kanban-card.animate-move{animation:cardMove .5s ease}
+</style>
+
+<script>
+const boardData = ${itemsJson};
+const eventsData = ${eventsJson};
+let currentEventIdx = 0;
+let isPlaying = false;
+let playInterval = null;
+
+function renderBoard(state) {
+  ['backlog', 'in_progress', 'review', 'done'].forEach(status => {
+    document.getElementById(status).innerHTML = '';
+  });
+  
+  state.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'kanban-card';
+    if (item.priority >= 75) card.classList.add('priority-high');
+    else if (item.priority >= 50) card.classList.add('priority-medium');
+    else card.classList.add('priority-low');
+    
+    card.innerHTML = '<div class="kanban-card-title">' + escapeHtml(item.title) + '</div><div class="kanban-card-meta">Priority: ' + item.priority + '</div>';
+    
+    const column = document.getElementById(item.current_status);
+    if (column) {
+      column.appendChild(card);
+      setTimeout(() => card.classList.add('animate-appear'), 10);
+    }
+  });
+}
+
+function applyEvent(state, event) {
+  const newState = JSON.parse(JSON.stringify(state));
+  
+  switch (event.event_type) {
+    case 'item_created':
+      newState.push({
+        id: event.item_id,
+        title: event.data.title,
+        current_status: event.data.status || 'backlog',
+        priority: event.data.priority || 50
+      });
+      break;
+    
+    case 'status_changed':
+      const item = newState.find(i => i.id === event.item_id);
+      if (item) item.current_status = event.data.new_status;
+      break;
+    
+    case 'priority_changed':
+      const item2 = newState.find(i => i.id === event.item_id);
+      if (item2) item2.priority = event.data.new_priority;
+      break;
+    
+    case 'title_changed':
+      const item3 = newState.find(i => i.id === event.item_id);
+      if (item3) item3.title = event.data.new_title;
+      break;
+  }
+  
+  return newState;
+}
+
+function replayToIndex(idx) {
+  let state = [];
+  for (let i = 0; i < idx && i < eventsData.length; i++) {
+    state = applyEvent(state, eventsData[i]);
+  }
+  renderBoard(state);
+  updateEventLog(idx);
+  document.getElementById('eventIdx').textContent = idx;
+  document.getElementById('timelineScrubber').value = idx;
+  currentEventIdx = idx;
+}
+
+function updateEventLog(currentIdx) {
+  const log = document.getElementById('eventLog');
+  if (!log) return;
+  
+  log.innerHTML = eventsData.slice(Math.max(0, currentIdx - 5), currentIdx + 5).map((e, i) => {
+    const globalIdx = Math.max(0, currentIdx - 5) + i;
+    const isCurrent = globalIdx === currentIdx - 1;
+    const dt = new Date(e.created_at).toLocaleString('en-GB', { timeZone: 'Europe/Sofia' });
+    return '<div class="event-log-item ' + (isCurrent ? 'current' : '') + '"><div class="event-log-time">' + dt + '</div><div class="event-log-desc"><strong>' + e.event_type + '</strong>: ' + (e.item_title || 'item #' + e.item_id) + ' by ' + (e.created_by || 'unknown') + '</div></div>';
+  }).join('');
+}
+
+function play() {
+  if (currentEventIdx >= eventsData.length) currentEventIdx = 0;
+  isPlaying = true;
+  document.getElementById('playBtn').textContent = '⏸ Pause';
+  const speed = parseInt(document.getElementById('speedSelect').value);
+  playInterval = setInterval(() => {
+    if (currentEventIdx >= eventsData.length) { pause(); return; }
+    replayToIndex(currentEventIdx + 1);
+  }, speed);
+}
+
+function pause() {
+  isPlaying = false;
+  document.getElementById('playBtn').textContent = '▶ Play';
+  if (playInterval) { clearInterval(playInterval); playInterval = null; }
+}
+
+document.getElementById('playBtn')?.addEventListener('click', () => { if (isPlaying) pause(); else play(); });
+document.getElementById('stepBackBtn')?.addEventListener('click', () => { pause(); replayToIndex(Math.max(0, currentEventIdx - 1)); });
+document.getElementById('stepFwdBtn')?.addEventListener('click', () => { pause(); replayToIndex(Math.min(eventsData.length, currentEventIdx + 1)); });
+document.getElementById('resetBtn')?.addEventListener('click', () => { pause(); replayToIndex(0); });
+document.getElementById('timelineScrubber')?.addEventListener('input', (e) => { pause(); replayToIndex(parseInt(e.target.value)); });
+document.getElementById('speedSelect')?.addEventListener('change', () => { if (isPlaying) { pause(); play(); } });
+
+function escapeHtml(s) {
+  if (!s) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+replayToIndex(eventsData.length);
+</script>`;
+    
+    return layout('Kanban: ' + escapeHtml(board.name), html, 'kanban');
+  }
+  
+  // List all boards
+  const { rows: boards } = await pool.query(
+    `SELECT b.id, b.instance, b.cron_name, b.name, b.created_at,
+            (SELECT count(*) FROM ${SCHEMA}.kanban_items WHERE board_id = b.id) as item_count,
+            (SELECT count(*) FROM ${SCHEMA}.kanban_events WHERE board_id = b.id) as event_count
+     FROM ${SCHEMA}.kanban_boards b
+     ORDER BY b.created_at DESC`
+  );
+  
+  if (!boards.length) {
+    const html = `
+<h2 style="margin:24px 0 16px">Kanban Boards</h2>
+<div class="empty">
+  <p>No kanban boards yet.</p>
+  <p style="margin-top:12px;font-size:14px">Crons can create boards and track tasks using the kanban tables.</p>
+</div>`;
+    return layout('Kanban', html, 'kanban');
+  }
+  
+  const boardCards = boards.map((b, idx) => {
+    const color = instanceColor(b.instance);
+    return `
+<div class="stat-card fade-in" style="animation-delay:${idx * 0.05}s;cursor:pointer" onclick="location.href='/kanban?board=${b.id}'">
+  <div style="text-align:left;margin-bottom:12px">
+    <h3 style="font-size:16px;margin-bottom:4px">${escapeHtml(b.name)}</h3>
+    <div style="font-size:12px;color:#6b7280">
+      <span class="instance" style="background:${color};color:#fff;padding:2px 8px;border-radius:4px">${escapeHtml(b.instance)}</span>
+      <span style="margin-left:8px">${escapeHtml(b.cron_name)}</span>
+    </div>
+  </div>
+  <div style="display:flex;gap:16px;justify-center;margin-top:16px">
+    <div><div class="number" style="font-size:24px">${b.item_count}</div><div class="label">Items</div></div>
+    <div><div class="number" style="font-size:24px">${b.event_count}</div><div class="label">Events</div></div>
+  </div>
+</div>`;
+  }).join('');
+  
+  const html = `
+<h2 style="margin:24px 0 16px">Kanban Boards</h2>
+<div class="stat-grid">${boardCards}</div>`;
+  
+  return layout('Kanban', html, 'kanban');
+}
 // ---- Server ----
 
 const server = http.createServer(async (req, res) => {
@@ -963,10 +1521,115 @@ const server = http.createServer(async (req, res) => {
       return respondJson(res, { context: rows });
     }
 
+    // Kanban API endpoints
+    if (url.pathname === '/api/kanban/boards' && req.method === 'GET') {
+      const { rows } = await pool.query(
+        `SELECT id, instance, cron_name, name, created_at FROM ${SCHEMA}.kanban_boards ORDER BY created_at DESC`
+      );
+      return respondJson(res, { boards: rows });
+    }
+    
+    if (url.pathname === '/api/kanban/board' && req.method === 'POST') {
+      const body = await parseBody(req);
+      const instance = body.get('instance');
+      const cronName = body.get('cron_name');
+      const name = body.get('name');
+      
+      if (!instance || !cronName || !name) {
+        return respondJson(res, { error: 'Missing required fields' });
+      }
+      
+      const { rows } = await pool.query(
+        `INSERT INTO ${SCHEMA}.kanban_boards (instance, cron_name, name) 
+         VALUES ($1, $2, $3) 
+         ON CONFLICT (instance, cron_name) DO UPDATE SET name = $3
+         RETURNING id`, [instance, cronName, name]
+      );
+      return respondJson(res, { board_id: rows[0].id });
+    }
+    
+    if (url.pathname === '/api/kanban/item' && req.method === 'POST') {
+      const body = await parseBody(req);
+      const boardId = body.get('board_id');
+      const title = body.get('title');
+      const status = body.get('status') || 'backlog';
+      const priority = parseInt(body.get('priority') || '50');
+      const createdBy = body.get('created_by');
+      
+      if (!boardId || !title) {
+        return respondJson(res, { error: 'Missing required fields' });
+      }
+      
+      // Insert item
+      const { rows: [item] } = await pool.query(
+        `INSERT INTO ${SCHEMA}.kanban_items (board_id, title, current_status, priority) 
+         VALUES ($1, $2, $3, $4) 
+         RETURNING id`, [boardId, title, status, priority]
+      );
+      
+      // Log event
+      await pool.query(
+        `INSERT INTO ${SCHEMA}.kanban_events (board_id, item_id, event_type, data, created_by)
+         VALUES ($1, $2, 'item_created', $3, $4)`,
+        [boardId, item.id, JSON.stringify({ title, status, priority }), createdBy]
+      );
+      
+      return respondJson(res, { item_id: item.id });
+    }
+    
+    if (url.pathname === '/api/kanban/event' && req.method === 'POST') {
+      const body = await parseBody(req);
+      const boardId = body.get('board_id');
+      const itemId = body.get('item_id');
+      const eventType = body.get('event_type');
+      const data = body.get('data'); // JSON string
+      const createdBy = body.get('created_by');
+      
+      if (!boardId || !itemId || !eventType || !data) {
+        return respondJson(res, { error: 'Missing required fields' });
+      }
+      
+      let dataObj;
+      try {
+        dataObj = JSON.parse(data);
+      } catch (e) {
+        return respondJson(res, { error: 'Invalid JSON in data field' });
+      }
+      
+      // Update item based on event type
+      if (eventType === 'status_changed' && dataObj.new_status) {
+        await pool.query(
+          `UPDATE ${SCHEMA}.kanban_items SET current_status = $1, updated_at = NOW() WHERE id = $2`,
+          [dataObj.new_status, itemId]
+        );
+      } else if (eventType === 'priority_changed' && dataObj.new_priority !== undefined) {
+        await pool.query(
+          `UPDATE ${SCHEMA}.kanban_items SET priority = $1, updated_at = NOW() WHERE id = $2`,
+          [dataObj.new_priority, itemId]
+        );
+      } else if (eventType === 'title_changed' && dataObj.new_title) {
+        await pool.query(
+          `UPDATE ${SCHEMA}.kanban_items SET title = $1, updated_at = NOW() WHERE id = $2`,
+          [dataObj.new_title, itemId]
+        );
+      }
+      
+      // Log event
+      const { rows: [event] } = await pool.query(
+        `INSERT INTO ${SCHEMA}.kanban_events (board_id, item_id, event_type, data, created_by)
+         VALUES ($1, $2, $3, $4, $5)
+         RETURNING id`, [boardId, itemId, eventType, JSON.stringify(dataObj), createdBy]
+      );
+      
+      return respondJson(res, { event_id: event.id });
+    }
+
     // Page routes
     let html;
     switch (url.pathname) {
       case '/': html = await handleSearch(url); break;
+      case '/kanban': html = await handleKanban(url); break;
+      case '/timeline': html = await handleTimeline(url); break;
       case '/crons': html = await handleCrons(url); break;
       case '/sessions': html = await handleSessions(url); break;
       case '/session': html = await handleSession(url); break;
