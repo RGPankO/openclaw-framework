@@ -157,6 +157,7 @@ function layout(title, content, activeTab = '') {
     { id: 'search', label: '🔍 Search', href: '/' },
     { id: 'kanban', label: '📋 Kanban', href: '/kanban' },
     { id: 'timeline', label: '⏱️ Timeline', href: '/timeline' },
+    { id: 'parallel', label: '🔄 Parallel', href: '/parallel' },
     { id: 'decisions', label: '⚖️ Decisions', href: '/decisions' },
     { id: 'crons', label: '⚙️ Crons', href: '/crons' },
     { id: 'sessions', label: '💬 Sessions', href: '/sessions' },
@@ -962,6 +963,120 @@ function formatTimeLabel(date, mode) {
   } else {
     return date.toLocaleString('en-GB', { ...opts, month: 'short', day: 'numeric', hour: '2-digit' });
   }
+}
+
+async function handleParallel(url) {
+  const timeRange = url.searchParams.get('range') || '6h'; // 1h, 3h, 6h, 12h, 24h
+  
+  // Calculate time window
+  const now = new Date();
+  let hours = 6;
+  if (timeRange === '1h') hours = 1;
+  else if (timeRange === '3h') hours = 3;
+  else if (timeRange === '6h') hours = 6;
+  else if (timeRange === '12h') hours = 12;
+  else if (timeRange === '24h') hours = 24;
+  
+  const startTime = new Date(now - hours * 60 * 60 * 1000);
+  
+  // Get all instances
+  const { rows: instances } = await pool.query(
+    `SELECT DISTINCT instance FROM ${SCHEMA}.messages ORDER BY instance`
+  );
+  
+  // Get messages for each instance in the time window
+  const instanceData = await Promise.all(instances.map(async (inst) => {
+    const { rows: messages } = await pool.query(
+      `SELECT id, message_id, session_id, role, content, created_at
+       FROM ${SCHEMA}.messages
+       WHERE instance = $1 AND created_at >= $2 AND created_at <= $3
+       ORDER BY created_at DESC
+       LIMIT 100`,
+      [inst.instance, startTime, now]
+    );
+    return { instance: inst.instance, messages };
+  }));
+  
+  // Build columns
+  const columnsHTML = instanceData.map(data => {
+    const color = instanceColor(data.instance);
+    const messagesHTML = data.messages.map(m => {
+      const snippet = m.content.length > 150 ? m.content.substring(0, 150) + '...' : m.content;
+      return `
+<div class="parallel-msg ${m.role}" 
+     data-msg-id="${m.id}"
+     data-instance="${escapeHtml(data.instance)}"
+     data-session-id="${escapeHtml(m.session_id || '')}"
+     onclick="showContext('${m.id}', '${escapeHtml(data.instance)}', '${escapeHtml(m.session_id || '')}')">
+  <div class="parallel-msg-time">${formatDate(m.created_at)}</div>
+  <div class="parallel-msg-role">${m.role}</div>
+  <div class="parallel-msg-content">${escapeHtml(snippet)}</div>
+</div>`;
+    }).join('');
+    
+    const emptyState = data.messages.length === 0 ? '<div class="parallel-empty">No activity in this window</div>' : '';
+    
+    return `
+<div class="parallel-column">
+  <div class="parallel-column-header" style="border-left-color:${color}">
+    <div class="parallel-instance-name">${escapeHtml(data.instance)}</div>
+    <div class="parallel-instance-count">${data.messages.length} message${data.messages.length !== 1 ? 's' : ''}</div>
+  </div>
+  <div class="parallel-column-content">
+    ${messagesHTML || emptyState}
+  </div>
+</div>`;
+  }).join('');
+  
+  const html = `
+<div style="margin-bottom:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+  <h2 style="margin:0">Cross-Instance Parallel View</h2>
+  <div style="display:flex;gap:8px">
+    <button onclick="changeRange('1h')" class="range-btn ${timeRange === '1h' ? 'active' : ''}">1h</button>
+    <button onclick="changeRange('3h')" class="range-btn ${timeRange === '3h' ? 'active' : ''}">3h</button>
+    <button onclick="changeRange('6h')" class="range-btn ${timeRange === '6h' ? 'active' : ''}">6h</button>
+    <button onclick="changeRange('12h')" class="range-btn ${timeRange === '12h' ? 'active' : ''}">12h</button>
+    <button onclick="changeRange('24h')" class="range-btn ${timeRange === '24h' ? 'active' : ''}">24h</button>
+  </div>
+</div>
+
+<div class="parallel-time-info">
+  Showing activity from ${formatDate(startTime)} to ${formatDate(now)}
+</div>
+
+<div class="parallel-container">
+  ${columnsHTML}
+</div>
+
+<style>
+.range-btn{padding:8px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#e0e0e0;font-size:13px;cursor:pointer;transition:all .2s;font-weight:500}
+.range-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(124,58,237,0.3)}
+.range-btn.active{background:linear-gradient(135deg,rgba(124,58,237,0.3),rgba(99,102,241,0.3));border-color:#7c3aed;color:#fff;box-shadow:0 0 20px rgba(124,58,237,0.3)}
+.parallel-time-info{text-align:center;font-size:13px;color:#9ca3af;margin-bottom:20px;padding:8px;background:rgba(255,255,255,0.04);border-radius:8px}
+.parallel-container{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-top:20px}
+.parallel-column{background:rgba(255,255,255,0.06);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;max-height:80vh}
+.parallel-column-header{padding:16px;background:rgba(255,255,255,0.08);border-left:4px solid;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.parallel-instance-name{font-size:16px;font-weight:700;color:#e0e0e0;margin-bottom:4px}
+.parallel-instance-count{font-size:12px;color:#9ca3af}
+.parallel-column-content{flex:1;overflow-y:auto;padding:12px}
+.parallel-msg{padding:12px;margin-bottom:8px;background:rgba(255,255,255,0.06);border-radius:8px;cursor:pointer;transition:all .2s;border-left:3px solid rgba(255,255,255,0.1)}
+.parallel-msg:hover{background:rgba(255,255,255,0.1);transform:translateX(4px);border-left-color:#7c3aed}
+.parallel-msg.user{border-left-color:rgba(99,102,241,0.5)}
+.parallel-msg.assistant{border-left-color:rgba(124,58,237,0.5)}
+.parallel-msg-time{font-size:10px;color:#6b7280;margin-bottom:4px}
+.parallel-msg-role{font-size:11px;font-weight:600;color:#9ca3af;text-transform:uppercase;margin-bottom:6px}
+.parallel-msg-content{font-size:13px;color:#d1d5db;line-height:1.5}
+.parallel-empty{padding:40px 20px;text-align:center;color:#6b7280;font-size:13px}
+</style>
+
+<script>
+function changeRange(range) {
+  window.location.href = '/parallel?range=' + range;
+}
+</script>
+`;
+  
+  return layout('Cross-Instance Parallel View', html, 'parallel');
 }
 
 async function handleCrons(url) {
@@ -1966,6 +2081,7 @@ const server = http.createServer(async (req, res) => {
       case '/': html = await handleSearch(url); break;
       case '/kanban': html = await handleKanban(url); break;
       case '/timeline': html = await handleTimeline(url); break;
+      case '/parallel': html = await handleParallel(url); break;
       case '/decisions': html = await handleDecisions(url); break;
       case '/crons': html = await handleCrons(url); break;
       case '/sessions': html = await handleSessions(url); break;
