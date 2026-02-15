@@ -88,12 +88,13 @@ function loginPage(error = '') {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mission Control — Login</title>
 <style>${baseCSS()}
-.login-box{max-width:360px;margin:100px auto;padding:32px;background:#1e1e2e;border-radius:12px}
-.login-box h1{text-align:center;margin-bottom:24px}
-.login-box input{width:100%;padding:12px;margin-bottom:16px;background:#2a2a3e;border:1px solid #3a3a5e;border-radius:8px;color:#e0e0e0;font-size:16px}
-.login-box button{width:100%;padding:12px;background:#7c3aed;border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer}
-.login-box button:hover{background:#6d28d9}
-.error{color:#ef4444;text-align:center;margin-bottom:12px}
+.login-box{max-width:360px;margin:100px auto;padding:40px;background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.login-box h1{text-align:center;margin-bottom:32px;text-shadow:0 0 20px rgba(124,58,237,0.3)}
+.login-box input{width:100%;padding:14px;margin-bottom:20px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e0e0e0;font-size:16px;transition:all .2s}
+.login-box input:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.2),0 0 20px rgba(124,58,237,0.4);background:rgba(255,255,255,0.08)}
+.login-box button{width:100%;padding:14px;background:linear-gradient(135deg,#7c3aed,#6366f1);border:none;border-radius:10px;color:#fff;font-size:16px;cursor:pointer;font-weight:600;box-shadow:0 4px 16px rgba(124,58,237,0.3);transition:all .2s}
+.login-box button:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,0.5)}
+.error{color:#ef4444;text-align:center;margin-bottom:16px;padding:10px;background:rgba(239,68,68,0.1);border-radius:8px;border:1px solid rgba(239,68,68,0.2)}
 </style></head><body>
 <div class="login-box">
 <h1>🦞 Mission Control</h1>
@@ -109,9 +110,45 @@ function baseCSS() {
   return `
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f0f1a;color:#e0e0e0;line-height:1.6}
-a{color:#818cf8;text-decoration:none}a:hover{text-decoration:underline}
+a{color:#818cf8;text-decoration:none;transition:color .15s}a:hover{color:#a5b4fc;text-decoration:none}
 .container{max-width:1200px;margin:0 auto;padding:16px}
-mark{background:#7c3aed;color:#fff;padding:1px 3px;border-radius:2px}
+mark{background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;padding:2px 5px;border-radius:3px;box-shadow:0 0 8px rgba(124,58,237,0.4)}
+
+/* Glassmorphism base */
+.glass{background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,0.3);transition:all .2s ease}
+.glass:hover{transform:translateY(-1px);box-shadow:0 12px 40px rgba(0,0,0,0.4)}
+
+/* Fade-in animation */
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .3s ease forwards}
+
+/* Loading skeleton */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.skeleton{background:rgba(255,255,255,0.05);border-radius:8px;animation:pulse 2s ease-in-out infinite}
+.skeleton-text{height:14px;margin:6px 0;width:100%}
+.skeleton-text.short{width:60%}
+
+/* Context panel */
+.context-panel{position:fixed;top:0;right:-500px;width:500px;height:100vh;background:rgba(15,15,26,0.98);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-left:1px solid rgba(255,255,255,0.15);box-shadow:-8px 0 32px rgba(0,0,0,0.5);transition:right .3s ease;z-index:1000;overflow-y:auto;padding:20px}
+.context-panel.open{right:0}
+.context-panel-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.1)}
+.context-panel-header h3{font-size:16px;color:#e0e0e0}
+.context-panel-close{background:rgba(255,255,255,0.08);border:none;color:#e0e0e0;padding:8px 16px;border-radius:8px;cursor:pointer;font-size:14px;transition:all .2s}
+.context-panel-close:hover{background:rgba(255,255,255,0.15);transform:translateY(-1px)}
+.context-msg{padding:14px;margin-bottom:10px;background:rgba(255,255,255,0.06);border-radius:10px;border-left:3px solid #3a3a5e;font-size:13px;transition:all .15s}
+.context-msg.current{background:rgba(124,58,237,0.15);border-left-color:#7c3aed;box-shadow:0 0 16px rgba(124,58,237,0.3)}
+.context-msg.user{border-left-color:#3b82f6}
+.context-msg.assistant{border-left-color:#10b981}
+.context-msg:hover{background:rgba(255,255,255,0.09);transform:translateY(-1px)}
+.context-msg-meta{font-size:11px;color:#9ca3af;margin-bottom:6px;display:flex;gap:8px;align-items:center}
+.context-msg-meta .role{text-transform:uppercase;font-weight:600}
+.context-msg-meta .role.user{color:#3b82f6}
+.context-msg-meta .role.assistant{color:#10b981}
+.context-msg-content{color:#d1d5db;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.view-session-btn{display:block;width:100%;margin-top:16px;padding:12px;background:linear-gradient(135deg,#7c3aed,#6366f1);border:none;border-radius:10px;color:#fff;font-size:14px;cursor:pointer;font-weight:600;text-align:center;box-shadow:0 4px 16px rgba(124,58,237,0.3);transition:all .2s;text-decoration:none}
+.view-session-btn:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,0.5);color:#fff}
+.msg{cursor:pointer}
+.msg.selected{background:rgba(124,58,237,0.2);border-color:#7c3aed;box-shadow:0 0 20px rgba(124,58,237,0.5),0 4px 20px rgba(0,0,0,0.2);transform:translateY(-2px) scale(1.01)}
 `;
 }
 
@@ -129,24 +166,27 @@ function layout(title, content, activeTab = '') {
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(title)} — Mission Control</title>
 <style>${baseCSS()}
-header{background:#1a1a2e;border-bottom:1px solid #2a2a3e;padding:12px 0}
+header{background:rgba(255,255,255,0.05);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,0.1);padding:12px 0}
 .header-inner{max-width:1200px;margin:0 auto;padding:0 16px;display:flex;align-items:center;justify-content:space-between}
-.logo{font-size:20px;font-weight:700;color:#e0e0e0}
+.logo{font-size:20px;font-weight:700;color:#e0e0e0;text-shadow:0 0 20px rgba(124,58,237,0.3)}
 .tabs{display:flex;gap:4px}
-.tab{padding:8px 16px;border-radius:8px;color:#a0a0b0;font-size:14px;transition:all .15s}
-.tab:hover{background:#2a2a3e;color:#e0e0e0;text-decoration:none}
-.tab.active{background:#7c3aed;color:#fff}
+.tab{padding:8px 16px;border-radius:8px;color:#a0a0b0;font-size:14px;transition:all .2s;background:transparent}
+.tab:hover{background:rgba(255,255,255,0.08);color:#e0e0e0;text-decoration:none;transform:translateY(-1px)}
+.tab.active{background:linear-gradient(135deg,#7c3aed,#6366f1);color:#fff;box-shadow:0 4px 16px rgba(124,58,237,0.4)}
 .search-box{margin:24px 0;display:flex;gap:8px;flex-wrap:wrap}
-.search-box input,.search-box select{padding:10px 14px;background:#1e1e2e;border:1px solid #3a3a5e;border-radius:8px;color:#e0e0e0;font-size:15px}
+.search-box input,.search-box select{padding:12px 16px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:10px;color:#e0e0e0;font-size:15px;transition:all .2s}
 .search-box input[type=text]{flex:1;min-width:200px}
+.search-box input[type=text]:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.2),0 0 20px rgba(124,58,237,0.4);background:rgba(255,255,255,0.08)}
 .search-box select{min-width:130px}
-.search-box button{padding:10px 20px;background:#7c3aed;border:none;border-radius:8px;color:#fff;font-size:15px;cursor:pointer}
-.search-box button:hover{background:#6d28d9}
-.msg{padding:16px;margin-bottom:8px;background:#1e1e2e;border-radius:8px;border-left:3px solid #3a3a5e}
-.msg.user{border-left-color:#3b82f6}
-.msg.assistant{border-left-color:#10b981}
-.msg-meta{font-size:12px;color:#6b7280;margin-bottom:6px;display:flex;gap:12px;flex-wrap:wrap}
-.msg-meta .instance{background:#2a2a3e;padding:2px 8px;border-radius:4px;font-weight:600}
+.search-box select:focus{outline:none;border-color:#7c3aed;box-shadow:0 0 0 3px rgba(124,58,237,0.2)}
+.search-box button{padding:12px 24px;background:linear-gradient(135deg,#7c3aed,#6366f1);border:none;border-radius:10px;color:#fff;font-size:15px;cursor:pointer;font-weight:600;box-shadow:0 4px 16px rgba(124,58,237,0.3);transition:all .2s}
+.search-box button:hover{transform:translateY(-2px);box-shadow:0 6px 24px rgba(124,58,237,0.5)}
+.msg{padding:18px;margin-bottom:12px;background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-radius:12px;border:1px solid rgba(255,255,255,0.12);border-left:3px solid #3a3a5e;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:all .2s}
+.msg:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.msg.user{border-left-color:#3b82f6;border-left-width:4px}
+.msg.assistant{border-left-color:#10b981;border-left-width:4px}
+.msg-meta{font-size:12px;color:#9ca3af;margin-bottom:8px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.msg-meta .instance{padding:3px 10px;border-radius:6px;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.3px;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
 .msg-meta .role{text-transform:uppercase;font-weight:600}
 .msg-meta .role.user{color:#3b82f6}
 .msg-meta .role.assistant{color:#10b981}
@@ -155,17 +195,20 @@ header{background:#1a1a2e;border-bottom:1px solid #2a2a3e;padding:12px 0}
 .msg-content.truncated::after{content:'';position:absolute;bottom:0;left:0;right:0;height:60px;background:linear-gradient(transparent,#1e1e2e)}
 .expand-btn{color:#818cf8;cursor:pointer;font-size:13px;margin-top:4px;display:inline-block}
 .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:24px 0}
-.stat-card{background:#1e1e2e;padding:20px;border-radius:12px;text-align:center}
-.stat-card .number{font-size:32px;font-weight:700;color:#7c3aed}
-.stat-card .label{font-size:14px;color:#6b7280;margin-top:4px}
-table{width:100%;border-collapse:collapse;margin:16px 0}
-th,td{padding:10px 12px;text-align:left;border-bottom:1px solid #2a2a3e;font-size:14px}
-th{color:#6b7280;font-weight:600;font-size:12px;text-transform:uppercase}
+.stat-card{background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);padding:24px;border-radius:16px;text-align:center;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:all .2s}
+.stat-card:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,0.3)}
+.stat-card .number{font-size:36px;font-weight:700;background:linear-gradient(135deg,#7c3aed,#6366f1);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-card .label{font-size:13px;color:#9ca3af;margin-top:8px;text-transform:uppercase;letter-spacing:0.5px}
+table{width:100%;border-collapse:separate;border-spacing:0;margin:16px 0;background:rgba(255,255,255,0.06);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.2)}
+th,td{padding:12px 16px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.08);font-size:14px}
+th{color:#9ca3af;font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;background:rgba(255,255,255,0.03)}
+tr:hover td{background:rgba(255,255,255,0.04)}
+tr:last-child td{border-bottom:none}
 .cron-summary{max-width:600px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .page-nav{display:flex;justify-content:center;gap:8px;margin:24px 0}
-.page-nav a{padding:8px 16px;background:#1e1e2e;border-radius:8px;color:#a0a0b0}
-.page-nav a:hover{background:#2a2a3e;color:#e0e0e0;text-decoration:none}
-.empty{text-align:center;padding:60px;color:#6b7280;font-size:16px}
+.page-nav a{padding:10px 20px;background:rgba(255,255,255,0.08);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.12);border-radius:10px;color:#a0a0b0;transition:all .2s;box-shadow:0 2px 8px rgba(0,0,0,0.2)}
+.page-nav a:hover{background:rgba(255,255,255,0.12);color:#e0e0e0;text-decoration:none;transform:translateY(-1px);box-shadow:0 4px 16px rgba(0,0,0,0.3)}
+.empty{text-align:center;padding:60px;color:#6b7280;font-size:16px;background:rgba(255,255,255,0.04);border-radius:12px;border:1px dashed rgba(255,255,255,0.1)}
 .date-range{display:flex;gap:8px;align-items:center}
 .date-range label{color:#6b7280;font-size:13px}
 </style></head><body>
@@ -174,6 +217,16 @@ th{color:#6b7280;font-weight:600;font-size:12px;text-transform:uppercase}
 <div class="tabs">${tabsHtml}</div>
 </div></header>
 <div class="container">${content}</div>
+
+<!-- Context Panel -->
+<div id="contextPanel" class="context-panel">
+  <div class="context-panel-header">
+    <h3>Conversation Context</h3>
+    <button class="context-panel-close" onclick="closeContext()">Close ✕</button>
+  </div>
+  <div id="contextContent"></div>
+</div>
+
 <script>
 document.querySelectorAll('.msg-content').forEach(el => {
   if (el.scrollHeight > 300) {
@@ -181,7 +234,8 @@ document.querySelectorAll('.msg-content').forEach(el => {
     const btn = document.createElement('span');
     btn.className = 'expand-btn';
     btn.textContent = 'Show more ▼';
-    btn.onclick = () => {
+    btn.onclick = (e) => {
+      e.stopPropagation();
       el.classList.toggle('expanded');
       el.classList.toggle('truncated');
       btn.textContent = el.classList.contains('expanded') ? 'Show less ▲' : 'Show more ▼';
@@ -189,22 +243,183 @@ document.querySelectorAll('.msg-content').forEach(el => {
     el.parentNode.insertBefore(btn, el.nextSibling);
   }
 });
+
+async function showContext(msgId, instance, sessionId) {
+  if (!msgId || !instance) return;
+  
+  const panel = document.getElementById('contextPanel');
+  const content = document.getElementById('contextContent');
+  
+  // Show loading
+  content.innerHTML = '<div class="skeleton"><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>'.repeat(5);
+  panel.classList.add('open');
+  
+  try {
+    const res = await fetch(\`/api/context?id=\${msgId}&instance=\${encodeURIComponent(instance)}\`);
+    const data = await res.json();
+    
+    if (!data.context || !data.context.length) {
+      content.innerHTML = '<div class="empty" style="padding:20px">No context available</div>';
+      return;
+    }
+    
+    const contextHtml = data.context.map(m => {
+      const isCurrent = m.id === parseInt(msgId);
+      return \`
+<div class="context-msg \${m.role} \${isCurrent ? 'current' : ''}">
+  <div class="context-msg-meta">
+    <span class="role \${m.role}">\${m.role}</span>
+    <span>\${formatDate(m.created_at)}</span>
+    \${isCurrent ? '<span style="color:#7c3aed">← Current</span>' : ''}
+  </div>
+  <div class="context-msg-content">\${escapeHtml(m.content)}</div>
+</div>\`;
+    }).join('');
+    
+    const viewSessionLink = sessionId ? 
+      \`<a href="/session?id=\${sessionId}&instance=\${encodeURIComponent(instance)}" class="view-session-btn">View Full Session</a>\` : '';
+    
+    content.innerHTML = contextHtml + viewSessionLink;
+  } catch (err) {
+    console.error('Context fetch error:', err);
+    content.innerHTML = '<div class="empty" style="padding:20px">Failed to load context</div>';
+  }
+}
+
+function closeContext() {
+  document.getElementById('contextPanel').classList.remove('open');
+}
+
+// Keyboard navigation
+let selectedIndex = -1;
+
+function getMessages() {
+  return Array.from(document.querySelectorAll('.msg[data-msg-id]'));
+}
+
+function selectMessage(index) {
+  const messages = getMessages();
+  if (index < 0 || index >= messages.length) return;
+  
+  // Remove previous selection
+  messages.forEach(m => m.classList.remove('selected'));
+  
+  // Select new message
+  selectedIndex = index;
+  const msg = messages[index];
+  msg.classList.add('selected');
+  
+  // Scroll into view
+  msg.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function openSelectedContext() {
+  const messages = getMessages();
+  if (selectedIndex < 0 || selectedIndex >= messages.length) return;
+  
+  const msg = messages[selectedIndex];
+  const msgId = msg.dataset.msgId;
+  const instance = msg.dataset.instance;
+  const sessionId = msg.dataset.sessionId;
+  
+  if (msgId && instance) {
+    showContext(msgId, instance, sessionId);
+  }
+}
+
+function clearSelection() {
+  getMessages().forEach(m => m.classList.remove('selected'));
+  selectedIndex = -1;
+}
+
+// Global keyboard handler
+document.addEventListener('keydown', (e) => {
+  const target = e.target;
+  const isInputFocused = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.tagName === 'SELECT';
+  
+  // / to focus search (only when not already in an input)
+  if (e.key === '/' && !isInputFocused) {
+    e.preventDefault();
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.select();
+    }
+    return;
+  }
+  
+  // Don't interfere with typing in inputs
+  if (isInputFocused && e.key !== 'Escape') return;
+  
+  // Esc to close context panel and clear selection
+  if (e.key === 'Escape') {
+    e.preventDefault();
+    closeContext();
+    clearSelection();
+    // Also blur any focused input
+    if (isInputFocused) target.blur();
+    return;
+  }
+  
+  const messages = getMessages();
+  if (!messages.length) return;
+  
+  // j to select next message
+  if (e.key === 'j') {
+    e.preventDefault();
+    const nextIndex = selectedIndex < 0 ? 0 : Math.min(selectedIndex + 1, messages.length - 1);
+    selectMessage(nextIndex);
+    return;
+  }
+  
+  // k to select previous message
+  if (e.key === 'k') {
+    e.preventDefault();
+    const prevIndex = selectedIndex < 0 ? 0 : Math.max(selectedIndex - 1, 0);
+    selectMessage(prevIndex);
+    return;
+  }
+  
+  // Enter to open context for selected message
+  if (e.key === 'Enter' && selectedIndex >= 0) {
+    e.preventDefault();
+    openSelectedContext();
+    return;
+  }
+});
+
+function escapeHtml(s) {
+  if (!s) return '';
+  const div = document.createElement('div');
+  div.textContent = s;
+  return div.innerHTML;
+}
+
+function formatDate(d) {
+  if (!d) return '';
+  return new Date(d).toLocaleString('en-GB', { timeZone: 'Europe/Sofia', year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+}
 </script>
 </body></html>`;
 }
 
 function renderMessages(rows, useHeadline = false) {
   if (!rows.length) return '<div class="empty">No messages found</div>';
-  return rows.map(r => {
+  return rows.map((r, idx) => {
     const content = useHeadline && r.headline ? r.headline : escapeHtml(r.content);
     const color = instanceColor(r.instance);
+    const msgId = r.id || r.message_id || '';
     return `
-<div class="msg ${r.role}">
+<div class="msg ${r.role} fade-in" style="animation-delay:${idx * 0.03}s" 
+     data-msg-id="${msgId}" 
+     data-instance="${escapeHtml(r.instance)}" 
+     data-session-id="${escapeHtml(r.session_id || '')}"
+     onclick="showContext('${msgId}', '${escapeHtml(r.instance)}', '${escapeHtml(r.session_id || '')}')">
   <div class="msg-meta">
     <span class="instance" style="background:${color};color:#fff">${escapeHtml(r.instance)}</span>
     <span class="role ${r.role}">${r.role}</span>
     <span>${formatDate(r.created_at)}</span>
-    ${r.rank ? `<span>relevance: ${parseFloat(r.rank).toFixed(3)}</span>` : ''}
+    ${r.rank ? `<span style="color:#7c3aed">relevance: ${parseFloat(r.rank).toFixed(3)}</span>` : ''}
   </div>
   <div class="msg-content">${content}</div>
 </div>`;
@@ -234,7 +449,7 @@ async function handleSearch(url) {
     if (to) { where.push(`created_at < ($${paramIdx}::date + interval '1 day')`); params.push(to); paramIdx++; }
     
     const { rows: r } = await pool.query(
-      `SELECT instance, role, content, created_at,
+      `SELECT id, instance, session_id, role, content, created_at,
               ts_rank(to_tsvector('english', content), websearch_to_tsquery('english', $1)) as rank,
               ts_headline('english', content, websearch_to_tsquery('english', $1),
                 'StartSel=<mark>, StopSel=</mark>, MaxFragments=2, MaxWords=30') as headline
@@ -247,7 +462,7 @@ async function handleSearch(url) {
   } else {
     // Default: show latest 50 messages
     const { rows: r } = await pool.query(
-      `SELECT instance, role, content, created_at
+      `SELECT id, instance, session_id, role, content, created_at
        FROM ${SCHEMA}.messages
        ORDER BY created_at DESC
        LIMIT $1 OFFSET $2`, [limit, offset]
@@ -311,16 +526,32 @@ searchInput?.addEventListener('input', (e) => {
 
 async function performSearch(query) {
   const instance = document.getElementById('instanceFilter')?.value || '';
+  
+  // Show loading skeleton
+  resultsContainer.innerHTML = \`
+<div class="msg skeleton"><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+<div class="msg skeleton"><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+<div class="msg skeleton"><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+\`;
+  
   try {
     const res = await fetch(\`/api/search?q=\${encodeURIComponent(query)}&instance=\${instance}\`);
     const data = await res.json();
     displayResults(data.results, query, true);
   } catch (err) {
     console.error('Search error:', err);
+    resultsContainer.innerHTML = '<div class="empty">Search failed. Please try again.</div>';
   }
 }
 
 async function loadDefaultMessages() {
+  // Show loading skeleton
+  resultsContainer.innerHTML = \`
+<div class="msg skeleton"><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+<div class="msg skeleton"><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+<div class="msg skeleton"><div class="skeleton-text"></div><div class="skeleton-text short"></div></div>
+\`;
+  
   try {
     const res = await fetch(\`/api/messages?offset=0&limit=50\`);
     const data = await res.json();
@@ -328,6 +559,7 @@ async function loadDefaultMessages() {
     offset = data.results.length;
   } catch (err) {
     console.error('Load error:', err);
+    resultsContainer.innerHTML = '<div class="empty">Failed to load messages. Please try again.</div>';
   }
 }
 
@@ -344,16 +576,22 @@ function displayResults(results, query, isSearch) {
     resultCount.textContent = '';
   }
   
-  resultsContainer.innerHTML = results.map(r => {
+  resultsContainer.innerHTML = results.map((r, idx) => {
     const content = isSearch && r.headline ? r.headline : escapeHtml(r.content);
     const color = instanceColor(r.instance);
+    const msgId = r.id || '';
+    const sessionId = r.session_id || '';
     return \`
-<div class="msg \${r.role}">
+<div class="msg \${r.role} fade-in" style="animation-delay:\${idx * 0.03}s" 
+     data-msg-id="\${msgId}" 
+     data-instance="\${escapeHtml(r.instance)}" 
+     data-session-id="\${sessionId}"
+     onclick="showContext('\${msgId}', '\${escapeHtml(r.instance)}', '\${sessionId}')">
   <div class="msg-meta">
     <span class="instance" style="background:\${color};color:#fff">\${escapeHtml(r.instance)}</span>
     <span class="role \${r.role}">\${r.role}</span>
     <span>\${formatDate(r.created_at)}</span>
-    \${r.rank ? \`<span>relevance: \${parseFloat(r.rank).toFixed(3)}</span>\` : ''}
+    \${r.rank ? \`<span style="color:#7c3aed">relevance: \${parseFloat(r.rank).toFixed(3)}</span>\` : ''}
   </div>
   <div class="msg-content">\${content}</div>
 </div>\`;
@@ -425,10 +663,16 @@ async function loadMore() {
     const data = await res.json();
     
     if (data.results.length > 0) {
-      const newMessages = data.results.map(r => {
+      const newMessages = data.results.map((r, idx) => {
         const color = instanceColor(r.instance);
+        const msgId = r.id || '';
+        const sessionId = r.session_id || '';
         return \`
-<div class="msg \${r.role}">
+<div class="msg \${r.role} fade-in" style="animation-delay:\${idx * 0.03}s"
+     data-msg-id="\${msgId}" 
+     data-instance="\${escapeHtml(r.instance)}" 
+     data-session-id="\${sessionId}"
+     onclick="showContext('\${msgId}', '\${escapeHtml(r.instance)}', '\${sessionId}')">
   <div class="msg-meta">
     <span class="instance" style="background:\${color};color:#fff">\${escapeHtml(r.instance)}</span>
     <span class="role \${r.role}">\${r.role}</span>
@@ -657,7 +901,7 @@ const server = http.createServer(async (req, res) => {
       }
       
       const { rows } = await pool.query(
-        `SELECT instance, role, content, created_at,
+        `SELECT id, instance, session_id, role, content, created_at,
                 ts_headline('english', content, websearch_to_tsquery('english', $1),
                   'StartSel=<mark>, StopSel=</mark>, MaxFragments=2, MaxWords=30') as headline
          FROM ${SCHEMA}.messages
@@ -673,12 +917,50 @@ const server = http.createServer(async (req, res) => {
       const limit = Math.min(parseInt(url.searchParams.get('limit') || '50'), 100);
       
       const { rows } = await pool.query(
-        `SELECT instance, role, content, created_at 
+        `SELECT id, instance, session_id, role, content, created_at 
          FROM ${SCHEMA}.messages
          ORDER BY created_at DESC
          LIMIT $1 OFFSET $2`, [limit, offset]
       );
       return respondJson(res, { results: rows, offset, limit });
+    }
+
+    if (url.pathname === '/api/context') {
+      const msgId = url.searchParams.get('id');
+      const instance = url.searchParams.get('instance');
+      if (!msgId || !instance) {
+        return respondJson(res, { error: 'Missing id or instance' });
+      }
+      
+      // Get the target message's created_at timestamp
+      const { rows: target } = await pool.query(
+        `SELECT created_at, session_id FROM ${SCHEMA}.messages WHERE id = $1 AND instance = $2`,
+        [msgId, instance]
+      );
+      
+      if (!target.length) {
+        return respondJson(res, { error: 'Message not found' });
+      }
+      
+      const targetTime = target[0].created_at;
+      const sessionId = target[0].session_id;
+      
+      // Get ±5 messages around this time in the same session
+      const { rows } = await pool.query(
+        `(SELECT id, role, content, created_at 
+          FROM ${SCHEMA}.messages 
+          WHERE instance = $1 AND session_id = $2 AND created_at < $3
+          ORDER BY created_at DESC LIMIT 5)
+         UNION ALL
+         (SELECT id, role, content, created_at 
+          FROM ${SCHEMA}.messages 
+          WHERE instance = $1 AND session_id = $2 AND created_at >= $3
+          ORDER BY created_at ASC LIMIT 6)
+         ORDER BY created_at ASC`,
+        [instance, sessionId, targetTime]
+      );
+      
+      return respondJson(res, { context: rows });
     }
 
     // Page routes
