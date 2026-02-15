@@ -157,6 +157,7 @@ function layout(title, content, activeTab = '') {
     { id: 'search', label: '🔍 Search', href: '/' },
     { id: 'kanban', label: '📋 Kanban', href: '/kanban' },
     { id: 'timeline', label: '⏱️ Timeline', href: '/timeline' },
+    { id: 'decisions', label: '⚖️ Decisions', href: '/decisions' },
     { id: 'crons', label: '⚙️ Crons', href: '/crons' },
     { id: 'sessions', label: '💬 Sessions', href: '/sessions' },
     { id: 'stats', label: '📊 Stats', href: '/stats' },
@@ -1126,6 +1127,280 @@ async function handleStats() {
   return layout('Stats', html, 'stats');
 }
 
+async function handleDecisions(url) {
+  const query = url.searchParams.get('q') || '';
+  const participant = url.searchParams.get('participant') || '';
+  
+  // Get all decisions with message context
+  let sql = `SELECT d.id, d.message_id, d.summary, d.participants, d.context, d.created_at,
+                    m.instance, m.session_id, m.content
+             FROM ${SCHEMA}.decisions d
+             LEFT JOIN ${SCHEMA}.messages m ON d.message_id = m.id
+             WHERE 1=1`;
+  const params = [];
+  
+  if (query) {
+    params.push(`%${query}%`);
+    sql += ` AND (d.summary ILIKE $${params.length} OR m.content ILIKE $${params.length})`;
+  }
+  
+  if (participant) {
+    params.push(participant);
+    sql += ` AND $${params.length} = ANY(d.participants)`;
+  }
+  
+  sql += ` ORDER BY d.created_at DESC LIMIT 100`;
+  
+  const { rows: decisions } = await pool.query(sql, params);
+  
+  // Get unique participants for filter
+  const { rows: participantsList } = await pool.query(
+    `SELECT DISTINCT unnest(participants) as name FROM ${SCHEMA}.decisions ORDER BY name`
+  );
+  
+  const participantFilters = participantsList.map(p => `
+    <button class="filter-btn ${participant === p.name ? 'active' : ''}" 
+            onclick="filterByParticipant('${escapeHtml(p.name)}')">
+      ${escapeHtml(p.name)}
+    </button>
+  `).join('');
+  
+  const decisionsHtml = decisions.length === 0 ? `
+    <div class="empty">
+      <p>No decisions found.</p>
+      <button onclick="extractDecisions()" class="primary-btn">Extract Decisions from Messages</button>
+    </div>
+  ` : decisions.map(d => {
+    const content = d.content || '';
+    const snippet = content.substring(0, 400);
+    const tags = d.participants ? d.participants.map(p => 
+      `<span class="tag" style="background: ${instanceColor(p)}20; color: ${instanceColor(p)}">${escapeHtml(p)}</span>`
+    ).join('') : '';
+    
+    return `
+    <div class="decision-card" data-id="${d.id}">
+      <div class="decision-header">
+        <div class="decision-summary">${escapeHtml(d.summary)}</div>
+        <button class="delete-btn" onclick="deleteDecision(${d.id})" title="Delete">✕</button>
+      </div>
+      <div class="decision-tags">${tags}</div>
+      <div class="decision-content">${escapeHtml(snippet)}${content.length > 400 ? '...' : ''}</div>
+      <div class="decision-meta">
+        ${d.instance ? `<span class="instance-badge" style="background: ${instanceColor(d.instance)}">${escapeHtml(d.instance)}</span>` : ''}
+        <span>${formatDate(d.created_at)}</span>
+        ${d.message_id ? `<button class="link-btn" onclick="viewContext(${d.message_id}, '${escapeHtml(d.instance)}', '${escapeHtml(d.session_id)}')">View Context</button>` : ''}
+      </div>
+    </div>
+    `;
+  }).join('');
+  
+  const html = `
+<div style="margin-bottom: 20px;">
+  <div style="display: flex; gap: 16px; margin-bottom: 16px;">
+    <input type="text" id="decision-search" placeholder="Search decisions..." 
+           value="${escapeHtml(query)}"
+           style="flex: 1; padding: 12px 16px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); 
+                  border-radius: 10px; color: #e0e0e0; font-size: 14px;"
+           onkeypress="if(event.key==='Enter')searchDecisions()">
+    <button onclick="searchDecisions()" class="primary-btn">Search</button>
+    <button onclick="extractDecisions()" class="primary-btn">Extract New</button>
+  </div>
+  
+  ${participantsList.length > 0 ? `
+    <div style="margin-bottom: 16px;">
+      <strong style="margin-right: 12px;">Filter by participant:</strong>
+      ${participant ? `<button class="filter-btn active" onclick="clearFilters()">✕ Clear</button>` : ''}
+      ${participantFilters}
+    </div>
+  ` : ''}
+</div>
+
+<div class="decisions-count" style="margin-bottom: 16px; color: #888;">
+  ${decisions.length} decision${decisions.length !== 1 ? 's' : ''} found
+</div>
+
+${decisionsHtml}
+
+<script>
+function searchDecisions() {
+  const query = document.getElementById('decision-search').value;
+  window.location.href = '/decisions?q=' + encodeURIComponent(query);
+}
+
+function filterByParticipant(name) {
+  const current = new URLSearchParams(window.location.search);
+  current.set('participant', name);
+  window.location.href = '/decisions?' + current.toString();
+}
+
+function clearFilters() {
+  window.location.href = '/decisions';
+}
+
+async function extractDecisions() {
+  if (!confirm('Extract decisions from recent messages? This will scan for keywords like "decided", "approved", "going with", etc.')) return;
+  
+  const res = await fetch('/api/decisions/extract', { method: 'POST' });
+  const data = await res.json();
+  
+  alert(data.extracted + ' new decisions extracted');
+  window.location.reload();
+}
+
+async function deleteDecision(id) {
+  if (!confirm('Delete this decision?')) return;
+  
+  await fetch('/api/decisions/' + id, { method: 'DELETE' });
+  document.querySelector('[data-id="' + id + '"]').style.opacity = '0';
+  setTimeout(() => window.location.reload(), 300);
+}
+
+function viewContext(msgId, instance, sessionId) {
+  // Reuse existing context panel logic
+  if (window.showContext) {
+    window.showContext(msgId, instance);
+  } else {
+    alert('Context viewing not available on this page');
+  }
+}
+</script>
+
+<style>
+.decision-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 16px;
+  transition: all 0.2s;
+}
+
+.decision-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  border-color: rgba(124,58,237,0.3);
+}
+
+.decision-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 12px;
+}
+
+.decision-summary {
+  font-size: 16px;
+  font-weight: 600;
+  color: #e0e0e0;
+  flex: 1;
+}
+
+.decision-tags {
+  margin-bottom: 12px;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.tag {
+  padding: 4px 12px;
+  border-radius: 16px;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.decision-content {
+  color: #b0b0b0;
+  line-height: 1.6;
+  margin-bottom: 12px;
+  padding: 12px;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  border-left: 3px solid rgba(124,58,237,0.5);
+}
+
+.decision-meta {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+  color: #888;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #b0b0b0;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 13px;
+}
+
+.filter-btn:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(124,58,237,0.3);
+}
+
+.filter-btn.active {
+  background: rgba(124,58,237,0.2);
+  border-color: rgba(124,58,237,0.5);
+  color: #e0e0e0;
+}
+
+.delete-btn {
+  background: rgba(239,68,68,0.1);
+  border: 1px solid rgba(239,68,68,0.2);
+  color: #ef4444;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.delete-btn:hover {
+  background: rgba(239,68,68,0.2);
+  border-color: rgba(239,68,68,0.4);
+}
+
+.link-btn {
+  background: rgba(99,102,241,0.1);
+  border: 1px solid rgba(99,102,241,0.2);
+  color: #6366f1;
+  padding: 6px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 12px;
+}
+
+.link-btn:hover {
+  background: rgba(99,102,241,0.2);
+  border-color: rgba(99,102,241,0.4);
+}
+
+.primary-btn {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #7c3aed, #6366f1);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.primary-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(124,58,237,0.4);
+}
+</style>
+`;
+  
+  return layout('Decisions', html, 'decisions');
+}
+
 async function handleKanban(url) {
   const boardId = url.searchParams.get('board');
   
@@ -1624,12 +1899,74 @@ const server = http.createServer(async (req, res) => {
       return respondJson(res, { event_id: event.id });
     }
 
+    // Decisions API endpoints
+    if (url.pathname === '/api/decisions/extract' && req.method === 'POST') {
+      // Extract decisions from messages
+      const { rows: candidates } = await pool.query(
+        `SELECT id, instance, session_id, content, created_at 
+         FROM ${SCHEMA}.messages 
+         WHERE content ILIKE ANY(ARRAY['%decided%', '%going with%', '%approved%', '%final call%', '%settled on%', '%consensus%'])
+         AND role = 'assistant'
+         AND id NOT IN (SELECT message_id FROM ${SCHEMA}.decisions WHERE message_id IS NOT NULL)
+         ORDER BY created_at DESC 
+         LIMIT 100`
+      );
+      
+      let inserted = 0;
+      for (const msg of candidates) {
+        // Extract a summary (first sentence or up to 200 chars)
+        const summary = msg.content.split(/[.!?]\s/)[0].substring(0, 200);
+        await pool.query(
+          `INSERT INTO ${SCHEMA}.decisions (message_id, summary, participants, context) 
+           VALUES ($1, $2, $3, $4)`,
+          [msg.id, summary, [msg.instance], msg.session_id]
+        );
+        inserted++;
+      }
+      
+      return respondJson(res, { extracted: inserted });
+    }
+    
+    if (url.pathname === '/api/decisions' && req.method === 'GET') {
+      const query = url.searchParams.get('q') || '';
+      const participant = url.searchParams.get('participant') || '';
+      
+      let sql = `SELECT d.id, d.message_id, d.summary, d.participants, d.context, d.created_at,
+                        m.instance, m.session_id, m.content
+                 FROM ${SCHEMA}.decisions d
+                 LEFT JOIN ${SCHEMA}.messages m ON d.message_id = m.id
+                 WHERE 1=1`;
+      const params = [];
+      
+      if (query) {
+        params.push(`%${query}%`);
+        sql += ` AND (d.summary ILIKE $${params.length} OR m.content ILIKE $${params.length})`;
+      }
+      
+      if (participant) {
+        params.push(participant);
+        sql += ` AND $${params.length} = ANY(d.participants)`;
+      }
+      
+      sql += ` ORDER BY d.created_at DESC LIMIT 100`;
+      
+      const { rows } = await pool.query(sql, params);
+      return respondJson(res, { decisions: rows });
+    }
+    
+    if (url.pathname.match(/^\/api\/decisions\/\d+$/) && req.method === 'DELETE') {
+      const id = parseInt(url.pathname.split('/').pop());
+      await pool.query(`DELETE FROM ${SCHEMA}.decisions WHERE id = $1`, [id]);
+      return respondJson(res, { deleted: id });
+    }
+
     // Page routes
     let html;
     switch (url.pathname) {
       case '/': html = await handleSearch(url); break;
       case '/kanban': html = await handleKanban(url); break;
       case '/timeline': html = await handleTimeline(url); break;
+      case '/decisions': html = await handleDecisions(url); break;
       case '/crons': html = await handleCrons(url); break;
       case '/sessions': html = await handleSessions(url); break;
       case '/session': html = await handleSession(url); break;
